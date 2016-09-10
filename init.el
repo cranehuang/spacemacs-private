@@ -47,6 +47,7 @@
      ;; (ruby :variables ruby-enable-enh-ruby-mode t
      ;;       ruby-version-manager 'chruby)
      ;; ruby-on-rails
+     ipython-notebook
      lua
      html
      javascript
@@ -92,10 +93,12 @@
    dotspacemacs-startup-lists '((recents . 5)
                                 (projects . 7))
    dotspacemacs-scratch-mode 'text-mode
-   dotspacemacs-themes '(solarized-light solarized-dark)
+   dotspacemacs-themes '(solarized-dark
+                         monokai
+                         spacemacs-dark)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 14
+                               :size 16
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -132,7 +135,7 @@
    dotspacemacs-show-transient-state-color-guide t
    dotspacemacs-mode-line-unicode-symbols t
    dotspacemacs-smooth-scrolling nil
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers 'relative
    dotspacemacs-folding-method 'origami
    dotspacemacs-smartparens-strict-mode nil
    dotspacemacs-smart-closing-parenthesis nil
@@ -174,13 +177,13 @@
     (dolist (charset '(kana han symbol cjk-misc bopomofo))
       (set-fontset-font (frame-parameter nil 'font)
                         charset
-                        (font-spec :family "Microsoft Yahei" :size 14))))
+                        (font-spec :family "Microsoft Yahei" :size 16))))
 
   (fset 'evil-visual-update-x-selection 'ignore)
 
   ;; force horizontal split window
   (setq split-width-threshold 120)
-  (linum-relative-on)
+  ;; (linum-relative-on)
 
   (spacemacs|add-company-hook 'text-mode)
 
