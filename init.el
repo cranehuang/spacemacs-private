@@ -48,6 +48,7 @@
      ;;       ruby-version-manager 'chruby)
      ;; ruby-on-rails
      ipython-notebook
+     ycmd
      lua
      html
      javascript
@@ -94,8 +95,8 @@
                                 (projects . 7))
    dotspacemacs-scratch-mode 'text-mode
    dotspacemacs-themes '(solarized-dark
-                         monokai
-                         spacemacs-dark)
+                         spacemacs-dark
+                         monokai)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Source Code Pro"
                                :size 16
@@ -126,9 +127,9 @@
    dotspacemacs-which-key-delay 0.4
    dotspacemacs-which-key-position 'bottom
    dotspacemacs-loading-progress-bar t
-   dotspacemacs-fullscreen-at-startup nil
+   dotspacemacs-fullscreen-at-startup t
    dotspacemacs-fullscreen-use-non-native nil
-   dotspacemacs-maximized-at-startup t
+   dotspacemacs-maximized-at-startup nil
    dotspacemacs-active-transparency 90
    dotspacemacs-inactive-transparency 90
    dotspacemacs-show-transient-state-title t
@@ -161,6 +162,7 @@
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
   (setq evil-shift-round nil)
   (setq byte-compile-warnings '(not obsolete))
+  (set-variable 'ycmd-server-command '("python" "/opt/github/ycmd/ycmd/"))
   )
 
 (defun dotspacemacs/user-config ()
@@ -189,9 +191,12 @@
 
   (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
+  (add-hook 'ycmd-mode-hook 'flycheck-mode)
   ;; temp fix for ivy-switch-buffer
   ;; (spacemacs/set-leader-keys "bb" 'helm-mini)
 
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i")
   (global-hungry-delete-mode t)
   (spacemacs|diminish helm-gtags-mode)
   (spacemacs|diminish ggtags-mode)
