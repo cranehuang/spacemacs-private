@@ -17,7 +17,7 @@
     )
 )
 
-(defun zilongshanren-better-defaults/init-recentf ()
+(defun zilongshanren-better-defaults/post-init-recentf ()
   (use-package recentf
       :config
       (setq recentf-exclude

@@ -41,6 +41,8 @@
         (eldoc :location built-in)
         dumb-jump
         graphviz-dot-mode
+        ycmd
+        company-c-headers
         ))
 
 (defun zilongshanren-programming/post-init-graphviz-dot-mode ()
@@ -434,7 +436,7 @@
   (progn
     (setq ycmd-tag-files 'auto)
     (setq ycmd-request-message-level -1)
-    (set-variable 'ycmd-server-command `("python" ,(expand-file-name "~/opensource/ycmd/ycmd/__main__.py")))
+    (set-variable 'ycmd-server-command `("python" ,(expand-file-name "/opt/github/ycmd/ycmd/__main__.py")))
     (setq company-backends-c-mode-common '((company-c-headers
                                             company-dabbrev-code
                                             company-keywords
@@ -517,7 +519,7 @@
   (progn
     (setq company-c-headers-path-system
           (quote
-           ("/usr/include/" "/usr/local/include/" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1")))
+           ("/usr/include/" "/usr/local/include/" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" "/usr/include/c++/5.4.0/")))
     (setq company-c-headers-path-user
           (quote
            ("/Users/guanghui/cocos2d-x/cocos/platform" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))

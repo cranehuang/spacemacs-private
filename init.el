@@ -59,6 +59,7 @@
      (clojure :variables clojure-enable-fancify-symbols t)
      racket
      (c-c++ :variables
+            c-c++-enable-clang-support t
             c-c++-default-mode-for-headers 'c++-mode)
      zilongshanren
      )
@@ -162,7 +163,7 @@
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
   (setq evil-shift-round nil)
   (setq byte-compile-warnings '(not obsolete))
-  (set-variable 'ycmd-server-command '("python" "/opt/github/ycmd/ycmd/"))
+  ;; (set-variable 'ycmd-server-command '("python" "/opt/github/ycmd/ycmd/"))
   )
 
 (defun dotspacemacs/user-config ()
