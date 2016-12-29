@@ -31,14 +31,14 @@
 
 (defconst zilongshanren-ui-packages
   '(
-    (zilong-mode-line :location built-in)
+    ;; (zilong-mode-line :location built-in)
     diminish
     popwin
     (whitespace :location built-in)
     ;; if you wnat to use spaceline, please comment out zilong-mode-line
-    ;; spaceline
+    spaceline
     ;; beacon
-    ;; evil-vimish-fold
+    evil-vimish-fold
     )
   )
 

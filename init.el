@@ -11,7 +11,7 @@
      better-defaults
      github
      ranger
-     colors
+     (colors :variables colors-enable-nyan-cat-progress-bar t)
      prodigy
      search-engine
      graphviz
@@ -22,6 +22,7 @@
      (spacemacs-layouts :variables layouts-enable-autosave nil
                         layouts-autosave-delay 300)
      (git :variables
+          git-enable-magit-svn-plugin t
           git-magit-status-fullscreen t
           magit-push-always-verify nil
           magit-save-repository-buffers 'dontask
@@ -44,11 +45,15 @@
      react
      (python :variables
              python-test-runner '(nose pytest))
-     ;; (ruby :variables ruby-enable-enh-ruby-mode t
-     ;;       ruby-version-manager 'chruby)
+     (ruby :variables ruby-enable-enh-ruby-mode t
+           ruby-version-manager 'chruby)
+     vagrant
      ;; ruby-on-rails
      ipython-notebook
      ycmd
+     (dash :variables
+           ;; helm-dash-docset-newpath "/Users/cranehuang/Library/Application Support/Dash/DocSets"
+           helm-dash-browser-func 'eww)
      lua
      html
      javascript
@@ -62,8 +67,10 @@
             c-c++-enable-clang-support t
             c-c++-default-mode-for-headers 'c++-mode)
      zilongshanren
+     (chinese :packages fcitx
+              :variables chinese-enable-fcitx nil)
      )
-   dotspacemacs-additional-packages '(sicp)
+   dotspacemacs-additional-packages '(sicp wakatime-mode)
    dotspacemacs-frozen-packages '()
    dotspacemacs-excluded-packages
    '(counsel-projectile magit-gh-pulls magit-gitflow org-projectile evil-mc
@@ -76,7 +83,7 @@
                         leuven-theme gh-md evil-lisp-state spray lorem-ipsum
                         ac-ispell ace-jump-mode auto-complete auto-dictionary
                         clang-format define-word google-translate disaster epic
-                        fancy-battery neotree org-present orgit orglue spacemacs-theme
+                        fancy-battery org-present orgit orglue spacemacs-theme
                         helm-flyspell flyspell-correct-helm clean-aindent-mode
                         helm-c-yasnippet ace-jump-helm-line helm-make
                         helm-themes helm-swoop helm-spacemacs-help smeargle
@@ -95,8 +102,8 @@
    dotspacemacs-startup-lists '((recents . 5)
                                 (projects . 7))
    dotspacemacs-scratch-mode 'text-mode
-   dotspacemacs-themes '(solarized-dark
-                         spacemacs-dark
+   dotspacemacs-themes '(spacemacs-dark
+                         solarized-dark
                          monokai)
    dotspacemacs-colorize-cursor-according-to-state t
    dotspacemacs-default-font '("Source Code Pro"
@@ -128,9 +135,9 @@
    dotspacemacs-which-key-delay 0.4
    dotspacemacs-which-key-position 'bottom
    dotspacemacs-loading-progress-bar t
-   dotspacemacs-fullscreen-at-startup t
+   dotspacemacs-fullscreen-at-startup nil
    dotspacemacs-fullscreen-use-non-native nil
-   dotspacemacs-maximized-at-startup nil
+   dotspacemacs-maximized-at-startup t
    dotspacemacs-active-transparency 90
    dotspacemacs-inactive-transparency 90
    dotspacemacs-show-transient-state-title t
@@ -153,7 +160,6 @@
         '(("melpa-cn" . "https://elpa.zilongshanren.com/melpa/")
           ("org-cn"   . "https://elpa.zilongshanren.com/org/")
           ("gnu-cn"   . "https://elpa.zilongshanren.com/gnu/")))
-
   ;; https://github.com/syl20bnr/spacemacs/issues/2705
   ;; (setq tramp-mode nil)
   (setq tramp-ssh-controlmaster-options
@@ -163,14 +169,13 @@
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
   (setq evil-shift-round nil)
   (setq byte-compile-warnings '(not obsolete))
-  ;; (set-variable 'ycmd-server-command '("python" "/opt/github/ycmd/ycmd/"))
   )
 
 (defun dotspacemacs/user-config ()
   ;;解决org表格里面中英文对齐的问题
   (when (configuration-layer/layer-usedp 'chinese)
     (when (and (spacemacs/system-is-mac) window-system)
-      (spacemacs//set-monospaced-font "Source Code Pro" "Hiragino Sans GB" 14 16)))
+      (spacemacs//set-monospaced-font "Source Code Pro" "Hiragino Sans GB" 16 16))) ;; 或者是（14 16）
 
   ;; Setting Chinese Font
   (when (and (spacemacs/system-is-mswindows) window-system)
@@ -238,8 +243,20 @@
 
   (add-to-list 'auto-mode-alist
                '("Capstanfile\\'" . yaml-mode))
+  (add-to-list 'auto-mode-alist
+               '("\\.jce\\'" . c-mode))
+  (add-to-list 'auto-mode-alist
+               '("\\.conf\\'" . nxml-web-mode))
+
+  (global-wakatime-mode)
 
   (add-hook 'text-mode-hook 'spacemacs/toggle-spelling-checking-on))
 
 (setq custom-file (expand-file-name "custom.el" dotspacemacs-directory))
 (load custom-file 'no-error 'no-message)
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+)

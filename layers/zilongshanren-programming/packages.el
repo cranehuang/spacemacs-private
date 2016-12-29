@@ -43,12 +43,13 @@
         graphviz-dot-mode
         ycmd
         company-c-headers
+        header2
         ))
 
 (defun zilongshanren-programming/post-init-graphviz-dot-mode ()
   (with-eval-after-load 'graphviz-dot-mode
-      (require 'company-keywords)
-      (push '(graphviz-dot-mode  "digraph" "node" "shape" "subgraph" "label" "edge" "bgcolor" "style" "record") company-keywords-alist)))
+    (require 'company-keywords)
+    (push '(graphviz-dot-mode  "digraph" "node" "shape" "subgraph" "label" "edge" "bgcolor" "style" "record") company-keywords-alist)))
 
 (defun zilongshanren-programming/post-init-dumb-jump ()
   (setq dumb-jump-selector 'ivy))
@@ -60,10 +61,10 @@
     ))
 
 (defun zilongshanren-programming/post-init-emacs-lisp ()
-    (remove-hook 'emacs-lisp-mode-hook 'auto-compile-mode))
+  (remove-hook 'emacs-lisp-mode-hook 'auto-compile-mode))
 
 (defun zilongshanren-programming/post-init-python ()
-  (add-hook 'python-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
+  (add-hook 'python-mode-hook #'(lambda () (cranefy-syntax-entry ?_ "w")))
   ;; if you use pyton3, then you could comment the following line
   (setq python-shell-interpreter "python"))
 
@@ -73,7 +74,7 @@
         js-doc-url "http://www.zilongshanren.com"
         js-doc-license "MIT")
 
- (defun my-js-doc-insert-function-doc-snippet ()
+  (defun my-js-doc-insert-function-doc-snippet ()
     "Insert JsDoc style comment of the function with yasnippet."
     (interactive)
 
@@ -146,8 +147,8 @@
     (set-face-background 'secondary-selection "gray")
     (setq-default yas-prompt-functions '(yas-ido-prompt yas-dropdown-prompt))
     (mapc #'(lambda (hook) (remove-hook hook 'spacemacs/load-yasnippet)) '(prog-mode-hook
-                                                                      org-mode-hook
-                                                                      markdown-mode-hook))
+                                                                       org-mode-hook
+                                                                       markdown-mode-hook))
 
     (spacemacs/add-to-hooks 'zilongshanren/load-yasnippet '(prog-mode-hook
                                                             markdown-mode-hook
@@ -436,7 +437,7 @@
   (progn
     (setq ycmd-tag-files 'auto)
     (setq ycmd-request-message-level -1)
-    (set-variable 'ycmd-server-command `("python" ,(expand-file-name "/opt/github/ycmd/ycmd/__main__.py")))
+    (set-variable 'ycmd-server-command `("python3" ,(expand-file-name "~/Githubs/ycmd/ycmd/__main__.py")))
     (setq company-backends-c-mode-common '((company-c-headers
                                             company-dabbrev-code
                                             company-keywords
@@ -522,4 +523,145 @@
            ("/usr/include/" "/usr/local/include/" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" "/usr/include/c++/5.4.0/")))
     (setq company-c-headers-path-user
           (quote
-           ("/Users/guanghui/cocos2d-x/cocos/platform" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))
+           ("/Users/cranehuang/Tencent/taf_v3/include/" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))
+
+(defun zilongshanren-programming/init-header2 ()
+  (use-package header2
+  :defer 10
+  :config
+  (progn
+
+    (defconst crane/header-sep-line-char ?-
+      "Character to be used for creating separator lines in header.")
+
+    (defconst crane/auto-headers-hooks '(verilog-mode-hook
+                                         python-mode-hook
+                                         sh-mode-hook
+                                         cperl-mode-hook
+                                         c-mode-hook
+                                         c++-mode-hook)
+      "List of hooks of major modes in which headers should be auto-inserted.")
+
+    (defvar crane/header-timestamp-cond (lambda () t)
+      "This variable should be set to a function that returns a non-nil
+value only when the time stamp is supposed to be inserted. By default, it's
+a `lambda' return `t', so the time stamp is always inserted.")
+
+    (defvar crane/header-version-cond (lambda () t)
+      "This variable should be set to a function that returns a non-nil
+value only when the version fields are supposed to be inserted. By default, it's
+a `lambda' return `t', so the version fields are always inserted.")
+
+    (defun crane/turn-on-auto-headers ()
+      "Turn on auto headers only for specific modes."
+      (interactive)
+      (dolist (hook crane/auto-headers-hooks)
+        (add-hook hook #'auto-make-header)))
+
+    (defun crane/turn-off-auto-headers ()
+      "Turn off auto headers only for specific modes."
+      (interactive)
+      (dolist (hook crane/auto-headers-hooks)
+        (remove-hook hook #'auto-make-header)))
+
+    (defun crane/header-multiline ()
+      "Insert multiline comment. The comment text is in `header-multiline' var."
+      (let ((lineno  1)
+            beg end nb-lines)
+        (beginning-of-line)
+        (if (nonempty-comment-end)
+            (insert "\n" comment-start)
+          ;; (header-blank)
+          (insert header-prefix-string))
+        (setq beg  (point))
+        (insert header-multiline)
+        (setq end       (point-marker)
+              nb-lines  (count-lines beg end))
+        (goto-char beg)
+        (forward-line 1)
+        (while (< lineno nb-lines)
+          (insert header-prefix-string)
+          (forward-line 1)
+          (setq lineno  (1+ lineno)))
+        (goto-char end)
+        (when (nonempty-comment-end) (insert "\n"))
+        (insert comment-end)
+        (insert "\n")))
+
+    (defsubst crane/header-sep-line ()
+      "Insert separator line"
+      (insert header-prefix-string)
+      (insert-char crane/header-sep-line-char (- fill-column (current-column)))
+      (insert "\n"))
+
+    (defsubst crane/header-timestamp ()
+      "Insert field for time stamp."
+      (when (funcall crane/header-timestamp-cond)
+        (insert header-prefix-string "Crane Time-stamp: <>\n")
+        (header-blank)))
+
+    (defsubst crane/header-projectname ()
+      "Insert \"Project\" line."
+      (insert header-prefix-string "Project            : "
+              (when (and (featurep 'projectile)
+                         (projectile-project-root))
+                (replace-regexp-in-string "/proj/\\(.*?\\)/.*"
+                                          "\\1"
+                                          (projectile-project-root)))
+              "\n"))
+
+    (defsubst crane/header-file-name ()
+      "Insert \"File Name\" line, using buffer's file name."
+      (insert header-prefix-string "File Name          : "
+              (if (buffer-file-name)
+                  (file-name-nondirectory (buffer-file-name))
+                (buffer-name))
+              "\n"))
+
+    (defsubst crane/header-author ()
+      "Insert current user's name (`user-full-name') as this file's author."
+      (insert header-prefix-string
+              "Original Author    : "
+              (user-full-name) "@"
+              (replace-regexp-in-string ".*?\\(\\w+\\.\\w+\\)$" "\\1"
+                                        (getenv "HOST"))
+              "\n"))
+
+    (defsubst crane/header-description ()
+      "Insert \"Description\" line."
+      (insert header-prefix-string "Description        : \n"))
+
+    (defsubst crane/header-copyright ()
+      "Insert the copyright block using `crane/header-multiline'.
+The copyright block will inserted only if the value of `header-copyright-notice'
+is non-nil."
+      (let ((header-multiline header-copyright-notice))
+        (crane/header-multiline)))
+
+    (defsubst crane/header-version ()
+      "Insert version info fields that will be auto-updated by SVN."
+      (when (funcall crane/header-version-cond)
+        (insert header-prefix-string "SVN Revision       : $Rev$\n")
+        (insert header-prefix-string "Last Commit Date   : $Date$\n")
+        (insert header-prefix-string "Last Commit Author : $Author$\n")
+        (crane/header-sep-line)))
+
+    (defsubst crane/header-position-point ()
+      "Position the point at a particular point in the file.
+Bring the point 2 lines below the current point."
+      (forward-line 0)
+      (newline 2))
+
+    (setq make-header-hook '(crane/header-timestamp        ; // Time-stamp: <>
+                             crane/header-sep-line         ; // ---------------
+                             crane/header-projectname      ; // Project
+                             crane/header-file-name        ; // File Name
+                             crane/header-author           ; // Original Author
+                             crane/header-description      ; // Description
+                             crane/header-sep-line         ; // ---------------
+                             crane/header-version          ; // Revision
+                             crane/header-copyright        ; // Copyright (c)
+                             crane/header-sep-line         ; // ---------------
+                             crane/header-position-point))
+
+    (crane/turn-on-auto-headers))))
