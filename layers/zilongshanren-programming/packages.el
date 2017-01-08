@@ -44,7 +44,68 @@
         ycmd
         company-c-headers
         header2
+        cider
+        ;; editorconfig
+        robe
         ))
+
+(defun zilongshanren-programming/post-init-robe ()
+  (progn
+    (add-hook 'inf-ruby-mode-hook 'spacemacs/toggle-auto-completion-on)
+    (defun zilongshanren/ruby-send-current-line (&optional print)
+      "Send the current line to the inferior Ruby process."
+      (interactive "P")
+      (ruby-send-region
+       (line-beginning-position)
+       (line-end-position))
+      (when print (ruby-print-result)))
+
+    (defun zilongshanren/ruby-send-current-line-and-go ()
+      (interactive)
+      (zilongshanren/ruby-send-current-line)
+      (ruby-switch-to-inf t))
+
+    (defun zilongshanren/start-inf-ruby-and-robe ()
+      (interactive)
+      (when (not (get-buffer "*ruby*"))
+        (inf-ruby))
+      (robe-start))
+
+    (dolist (mode '(ruby-mode enh-ruby-mode))
+      (spacemacs/set-leader-keys-for-major-mode mode
+        "sb" 'ruby-send-block
+        "sB" 'ruby-send-buffer
+        "sl" 'zilongshanren/ruby-send-current-line
+        "sL" 'zilongshanren/ruby-send-current-line-and-go
+        "sI" 'zilongshanren/start-inf-ruby-and-robe))))
+
+(defun zilongshanren-programming/init-editorconfig ()
+  (use-package editorconfig
+    :init
+    (progn
+      (defun conditional-enable-editorconfig ()
+        (if (and (zilongshanren/vcs-project-root)
+                 (locate-dominating-file default-directory ".editorconfig"))
+            (editorconfig-apply)))
+      (add-hook 'prog-mode-hook 'conditional-enable-editorconfig))))
+
+(defun zilongshanren-programming/post-init-cider ()
+  (setq cider-cljs-lein-repl
+        "(do (require 'figwheel-sidecar.repl-api)
+           (figwheel-sidecar.repl-api/start-figwheel!)
+           (figwheel-sidecar.repl-api/cljs-repl))")
+
+  (defun zilongshanren/cider-figwheel-repl ()
+    (interactive)
+    (save-some-buffers)
+    (with-current-buffer (cider-current-repl-buffer)
+      (goto-char (point-max))
+      (insert "(require 'figwheel-sidecar.repl-api)
+             (figwheel-sidecar.repl-api/start-figwheel!) ; idempotent
+             (figwheel-sidecar.repl-api/cljs-repl)")
+      (cider-repl-return)))
+
+  (global-set-key (kbd "C-c C-f") #'zilongshanren/cider-figwheel-repl))
 
 (defun zilongshanren-programming/post-init-graphviz-dot-mode ()
   (with-eval-after-load 'graphviz-dot-mode
@@ -52,13 +113,15 @@
     (push '(graphviz-dot-mode  "digraph" "node" "shape" "subgraph" "label" "edge" "bgcolor" "style" "record") company-keywords-alist)))
 
 (defun zilongshanren-programming/post-init-dumb-jump ()
-  (setq dumb-jump-selector 'ivy))
+  (setq dumb-jump-selector 'ivy)
+  (defun my-dumb-jump ()
+    (interactive)
+    (evil-set-jump)
+    (dumb-jump-go))
+  (global-set-key (kbd "C-s-g") 'my-dumb-jump))
 
 (defun zilongshanren-programming/post-init-clojure-mode ()
-  (use-package clojure-mode
-    :defer t
-    :config
-    ))
+  )
 
 (defun zilongshanren-programming/post-init-emacs-lisp ()
   (remove-hook 'emacs-lisp-mode-hook 'auto-compile-mode))
@@ -135,6 +198,9 @@
 ;;       (setq inferior-js-program-command "node"))))
 
 (defun zilongshanren-programming/post-init-web-mode ()
+  (with-eval-after-load "web-mode"
+    (web-mode-toggle-current-element-highlight)
+    (web-mode-dom-errors-show))
   (setq company-backends-web-mode '((company-dabbrev-code
                                      company-keywords
                                      company-etags)
@@ -162,9 +228,9 @@
          (define-key racket-repl-mode-map (kbd "]") nil)
          (define-key racket-repl-mode-map (kbd "[") nil)))
 
-    (add-hook 'racket-mode-hook (lambda () (lispy-mode 1)))
+    (add-hook 'racket-mode-hook #'(lambda () (lispy-mode 1)))
     (add-hook 'racket-repl-mode-hook #'(lambda () (lispy-mode t)))
-    (add-hook 'racket-repl-mode-hook #'(lambda () (smartparens-mode t)))
+    ;; (add-hook 'racket-repl-mode-hook #'(lambda () (smartparens-mode t)))
     ))
 
 (defun zilongshanren-programming/post-init-json-mode ()
@@ -189,23 +255,30 @@
     :diminish (lispy-mode)
     :init
     (progn
+
       (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1)))
       (add-hook 'ielm-mode-hook (lambda () (lispy-mode 1)))
       (add-hook 'inferior-emacs-lisp-mode-hook (lambda () (lispy-mode 1)))
       ;; (add-hook 'spacemacs-mode-hook (lambda () (lispy-mode 1)))
       (add-hook 'clojure-mode-hook (lambda () (lispy-mode 1)))
       (add-hook 'scheme-mode-hook (lambda () (lispy-mode 1)))
-      (add-hook 'cider-repl-mode-hook (lambda () (lispy-mode 1))))
+      (add-hook 'cider-repl-mode-hook (lambda () (lispy-mode 1)))
+      )
     :config
     (progn
       (push '(cider-repl-mode . ("[`'~@]+" "#" "#\\?@?")) lispy-parens-preceding-syntax-alist)
+
+      (define-key lispy-mode-map (kbd "s-j") 'lispy-splice)
+      (define-key lispy-mode-map (kbd "s-k") 'paredit-splice-sexp-killing-backward)
+
+      (with-eval-after-load 'cider-repl
+        (define-key cider-repl-mode-map (kbd "C-s-j") 'cider-repl-newline-and-indent))
 
       (add-hook
        'minibuffer-setup-hook
        'conditionally-enable-lispy)
       (define-key lispy-mode-map (kbd "s-m") 'lispy-mark-symbol)
       (define-key lispy-mode-map (kbd "s-1") 'lispy-describe-inline)
-      (define-key lispy-mode-map (kbd "s-k") 'lispy-splice)
       (define-key lispy-mode-map (kbd "s-2") 'lispy-arglist-inline))))
 
 
@@ -258,6 +331,9 @@
 
 (defun zilongshanren-programming/post-init-js2-mode ()
   (progn
+    (add-hook 'js2-mode-hook 'my-setup-develop-environment)
+    (add-hook 'web-mode-hook 'my-setup-develop-environment)
+
     (spacemacs|define-jump-handlers js2-mode)
     (add-hook 'spacemacs-jump-handlers-js2-mode 'etags-select-find-tag-at-point)
 
@@ -271,6 +347,9 @@
 
     (add-hook 'js2-mode-hook 'my-js2-mode-hook)
 
+    ;; add your own keywords highlight here
+    (font-lock-add-keywords 'js2-mode
+                            '(("\\<\\(cc\\)\\>" 1 font-lock-type-face)))
 
     (spacemacs/declare-prefix-for-mode 'js2-mode "ms" "repl")
 
@@ -281,7 +360,7 @@
         (setq-default js2-allow-rhino-new-expr-initializer nil)
         (setq-default js2-auto-indent-p nil)
         (setq-default js2-enter-indents-newline nil)
-        (setq-default js2-global-externs '("module" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
+        (setq-default js2-global-externs '("module" "ccui" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
         (setq-default js2-idle-timer-delay 0.2)
         (setq-default js2-mirror-mode nil)
         (setq-default js2-strict-inconsistent-return-warning nil)
@@ -372,7 +451,7 @@
 (defun zilongshanren-programming/post-init-lua-mode ()
   (progn
     (add-hook 'lua-mode-hook 'evil-matchit-mode)
-    (add-hook 'lua-mode-hook 'smartparens-mode)
+    ;; (add-hook 'lua-mode-hook 'smartparens-mode)
     (setq lua-indent-level 2)
 
 ;;; add lua language, basic, string and table keywords.
@@ -395,11 +474,7 @@
     (spacemacs/set-leader-keys-for-major-mode 'c++-mode
       "gd" 'etags-select-find-tag-at-point)
 
-    (defvar my-tags-updated-time nil)
 
-    ;; (add-hook 'after-save-hook 'my-auto-update-tags-when-save)
-    (add-hook 'js2-mode-hook 'my-setup-develop-environment)
-    (add-hook 'web-mode-hook 'my-setup-develop-environment)
     (add-hook 'c++-mode-hook 'my-setup-develop-environment)
     (add-hook 'c-mode-hook 'my-setup-develop-environment)
 
@@ -424,7 +499,7 @@
     (c-set-offset 'substatement-open 0)
     (with-eval-after-load 'c++-mode
       (define-key c++-mode-map (kbd "s-.") 'company-ycmd)))
-  ;; company backend should be grouped
+
   )
 
 (defun zilongshanren-programming/init-flycheck-clojure ()
@@ -437,7 +512,7 @@
   (progn
     (setq ycmd-tag-files 'auto)
     (setq ycmd-request-message-level -1)
-    (set-variable 'ycmd-server-command `("python3" ,(expand-file-name "~/Githubs/ycmd/ycmd/__main__.py")))
+    (set-variable 'ycmd-server-command `("python3.5" ,(expand-file-name "~/Githubs/ycmd/ycmd/__main__.py")))
     (setq company-backends-c-mode-common '((company-c-headers
                                             company-dabbrev-code
                                             company-keywords
@@ -491,8 +566,6 @@
                paredit-splice-sexp-killing-backward)
     :init
     (progn
-      (bind-key* "s-j"
-                 #'paredit-splice-sexp-killing-backward)
 
       (bind-key* "s-(" #'paredit-wrap-round)
       (bind-key* "s-[" #'paredit-wrap-square)
@@ -505,17 +578,8 @@
           company-idle-delay 0.08)
 
     (when (configuration-layer/package-usedp 'company)
-      (spacemacs|add-company-hook shell-script-mode)
-      (spacemacs|add-company-hook makefile-bsdmake-mode)
-      (spacemacs|add-company-hook sh-mode)
-      (spacemacs|add-company-hook lua-mode)
-      (spacemacs|add-company-hook nxml-mode)
-      (spacemacs|add-company-hook conf-unix-mode)
-      (spacemacs|add-company-hook json-mode)
-      (spacemacs|add-company-hook graphviz-dot-mode)
-      )
+      (spacemacs|add-company-backends :modes shell-script-mode makefile-bsdmake-mode sh-mode lua-mode nxml-mode conf-unix-mode json-mode graphviz-dot-mode))
     ))
-
 (defun zilongshanren-programming/post-init-company-c-headers ()
   (progn
     (setq company-c-headers-path-system

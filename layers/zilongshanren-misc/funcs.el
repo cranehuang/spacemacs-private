@@ -224,11 +224,10 @@ e.g. Sunday, September 17, 2000."
 
 (defun zilongshanren/open-file-with-projectile-or-counsel-git ()
   (interactive)
-  (if (zilongshanren/vcs-project-root)
-      (counsel-git)
-    (if (projectile-project-p)
-        (projectile-find-file)
-      (counsel-file-jump))))
+  (if (or (zilongshanren/vcs-project-root)
+          (projectile-project-p))
+      (projectile-find-file)
+    (counsel-file-jump)))
 
 
 ;; http://blog.lojic.com/2009/08/06/send-growl-notifications-from-carbon-emacs-on-osx/
@@ -502,7 +501,8 @@ With PREFIX, cd to project root."
 (defun my-open-file-in-external-app (file)
   "Open file in external application."
   (interactive)
-  (let ((file-path file))
+  (let ((default-directory (zilongshanren/vcs-project-root))
+        (file-path file))
     (if file-path
         (cond
          ((spacemacs/system-is-mswindows) (w32-shell-execute "open" (replace-regexp-in-string "/" "\\\\" file-path)))
@@ -587,3 +587,8 @@ With PREFIX, cd to project root."
 (defun zilongshanren/show-current-buffer-major-mode ()
   (interactive)
   (describe-variable 'major-mode))
+
+(defun zilongshanren/counsel-imenu ()
+  (interactive)
+  (counsel-imenu)
+  (evil-set-jump))
