@@ -1,6 +1,6 @@
 ;;; funcs.el --- zilongshanren Layer packages File for Spacemacs
 ;;
-;; Copyright (c) 2015-2016 zilongshanren 
+;; Copyright (c) 2015-2016 zilongshanren
 ;;
 ;; Author: zilongshanren <guanghui8827@gmail.com>
 ;; URL: https://github.com/zilongshanren/spacemacs-private
@@ -239,20 +239,20 @@ version 2015-08-21"
 
 
 (defun my-auto-update-tags-when-save (prefix)
-      (interactive "P")
-      (cond
-       ((not my-tags-updated-time)
-        (setq my-tags-updated-time (current-time)))
+  (interactive "P")
+  (cond
+   ((not my-tags-updated-time)
+    (setq my-tags-updated-time (current-time)))
 
-       ((and (not prefix)
-             (< (- (float-time (current-time)) (float-time my-tags-updated-time)) 300))
-        ;; < 300 seconds
-        (message "no need to update the tags")
-        )
-       (t
-        (setq my-tags-updated-time (current-time))
-        (my-update-tags)
-        (message "updated tags after %d seconds." (- (float-time (current-time)) (float-time my-tags-updated-time))))))
+   ((and (not prefix)
+         (< (- (float-time (current-time)) (float-time my-tags-updated-time)) 300))
+    ;; < 300 seconds
+    (message "no need to update the tags")
+    )
+   (t
+    (setq my-tags-updated-time (current-time))
+    (my-update-tags)
+    (message "updated tags after %d seconds." (- (float-time (current-time)) (float-time my-tags-updated-time))))))
 
 
 (defun my-setup-develop-environment ()
@@ -266,3 +266,21 @@ version 2015-08-21"
       (message "load tags for fireball engine repo...")
       ;; html project donot need C++ tags
       (setq tags-table-list (list (my-create-tags-if-needed "~/Github/fireball/engine/cocos2d")))))))
+
+(defun spacemacs/counsel-gtags-maybe-dwim ()
+  (interactive)
+  (let (gtags-enable-by-default
+        (call-interactively 'counsel-gtags-dwim))))
+
+(defun spacemacs/counsel-gtags-define-keys-for-mode (mode)
+  (when (fboundp mode)
+    (let ((jumpl (intern (format "spacemacs-jump-handlers-%S" mode))))
+      (add-to-list jumpl 'spacemacs/counsel-gtags-maybe-dwim 'append))
+
+    (spacemacs/set-leader-keys-for-major-mode mode
+      "gc" 'counsel-gtags-create-tags
+      "gd" 'counsel-gtags-find-definition
+      "gr" 'counsel-gtags-find-reference
+      "gs" 'counsel-gtags-find-symbol
+      "gS" 'counsel-gtags-pop-stack)))
+
