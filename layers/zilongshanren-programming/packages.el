@@ -607,10 +607,9 @@
 
 (defun zilongshanren-programming/init-header2 ()
   (use-package header2
-    :defer 10
+    :defer t
     :config
     (progn
-
       (defconst crane/header-sep-line-char ?-
         "Character to be used for creating separator lines in header.")
 
@@ -677,7 +676,9 @@ a `lambda' return `t', so the version fields are always inserted.")
       (defsubst crane/header-timestamp ()
         "Insert field for time stamp."
         (when (funcall crane/header-timestamp-cond)
-          (insert header-prefix-string "Crane Time-stamp: <>\n")
+          (insert header-prefix-string
+                  (format "%s%s\n" "Timestamp          : "
+                          (format-time-string "%Y-%m-%d")))
           (header-blank)))
 
       (defsubst crane/header-projectname ()
@@ -700,12 +701,12 @@ a `lambda' return `t', so the version fields are always inserted.")
 
       (defsubst crane/header-author ()
         "Insert current user's name (`user-full-name') as this file's author."
-        (insert header-prefix-string
-                "Original Author    : "
-                (user-full-name) "@"
-                (replace-regexp-in-string ".*?\\(\\w+\\.\\w+\\)$" "\\1"
-                                          (getenv "HOST"))
-                "\n"))
+        ;; (insert header-prefix-string
+        ;;         "Original Author    : "
+        ;;         (user-full-name) "@"
+        ;;         (replace-regexp-in-string ".*?\\(\\w+\\.\\w+\\)$" "\\1"
+        ;;                                   (getenv "HOST"))
+        (insert header-prefix-string "Author             : cranehuang\n"))
 
       (defsubst crane/header-description ()
         "Insert \"Description\" line."
@@ -732,15 +733,15 @@ Bring the point 2 lines below the current point."
         (forward-line 0)
         (newline 2))
 
-      (setq make-header-hook '(crane/header-timestamp        ; // Time-stamp: <>
-                               crane/header-sep-line         ; // ---------------
-                               crane/header-projectname      ; // Project
+      (setq make-header-hook '(crane/header-sep-line         ; // ---------------
+                               ;; crane/header-projectname      ; // Project
                                crane/header-file-name        ; // File Name
                                crane/header-author           ; // Original Author
+                               crane/header-timestamp        ; // Timestamp: <>
                                crane/header-description      ; // Description
-                               crane/header-sep-line         ; // ---------------
-                               crane/header-version          ; // Revision
-                               crane/header-copyright        ; // Copyright (c)
+                               ;; crane/header-sep-line         ; // ---------------
+                               ;; crane/header-version          ; // Revision
+                               ;; crane/header-copyright        ; // Copyright (c)
                                crane/header-sep-line         ; // ---------------
                                crane/header-position-point))
 
