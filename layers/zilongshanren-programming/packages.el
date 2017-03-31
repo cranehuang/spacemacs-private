@@ -47,6 +47,7 @@
         cider
         ;; editorconfig
         robe
+        kotlin-mode
         (counsel-gtags :location local)
         ;; (counsel-gtags :location local
         ;;                :toggle (configuration-layer/package-usedp 'ivy))
@@ -604,6 +605,11 @@
     (setq company-c-headers-path-user
           (quote
            ("/Users/cranehuang/Tencent/taf/taf_v3/include/" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))
+
+(defun zilongshanren-programming/init-kotlin-mode ()
+  (use-package kotlin-mode
+    :defer t
+    :config))
 
 (defun zilongshanren-programming/init-header2 ()
   (use-package header2
