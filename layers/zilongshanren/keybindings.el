@@ -33,6 +33,17 @@
 (global-set-key (kbd "C-M-\\") 'indent-region-or-buffer)
 (global-set-key [remap fill-paragraph] #'endless/fill-or-unfill)
 
+;; keybindings for opengrok
+(define-key global-map (kbd "C-c s i") 'eopengrok-create-index)
+(define-key global-map (kbd "C-c s I") 'eopengrok-create-index-with-enable-projects)
+(define-key global-map (kbd "C-c s d") 'eopengrok-find-definition)
+(define-key global-map (kbd "C-c s f") 'eopengrok-find-file)
+(define-key global-map (kbd "C-c s s") 'eopengrok-find-reference)
+(define-key global-map (kbd "C-c s t") 'eopengrok-find-text)
+(define-key global-map (kbd "C-c s h") 'eopengrok-find-history)
+(define-key global-map (kbd "C-c s c") 'eopengrok-find-custom)
+(define-key global-map (kbd "C-c s b") 'eopengrok-resume)
+
 ;; (global-set-key (kbd "C-.") 'company-capf)
 
 ;; some easy functions for navigate functions

@@ -51,6 +51,7 @@
         (counsel-gtags :location local)
         ;; (counsel-gtags :location local
         ;;                :toggle (configuration-layer/package-usedp 'ivy))
+        eopengrok
         ))
 
 (defun zilongshanren-programming/post-init-robe ()
@@ -131,7 +132,7 @@
   (remove-hook 'emacs-lisp-mode-hook 'auto-compile-mode))
 
 (defun zilongshanren-programming/post-init-python ()
-  (add-hook 'python-mode-hook #'(lambda () (cranefy-syntax-entry ?_ "w")))
+  (add-hook 'python-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
   ;; if you use pyton3, then you could comment the following line
   (setq python-shell-interpreter "python"))
 
@@ -604,10 +605,24 @@
            ("/usr/include/" "/usr/local/include/" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" "/usr/include/c++/5.4.0/" "/usr/local/Cellar/gcc/6.3.0/include/c++/6.3.0/")))
     (setq company-c-headers-path-user
           (quote
-           ("/Users/cranehuang/Tencent/taf/taf_v3/include/" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))
+           ("/Users/cranehuang/Tencent/taf/taf_v3/include/")))))
 
 (defun zilongshanren-programming/init-kotlin-mode ()
   (use-package kotlin-mode
+    :defer t
+    :config))
+
+(defun zilongshanren-programming/init-eopengrok ()
+  (use-package eopengrok
+    :commands (eopengrok-create-index
+               eopengrok-create-index-with-enable-projects
+               eopengrok-find-definition
+               eopengrok-find-file
+               eopengrok-find-reference
+               eopengrok-find-text
+               eopengrok-find-history
+               eopengrok-find-custom
+               eopengrok-find-resume)
     :defer t
     :config))
 
