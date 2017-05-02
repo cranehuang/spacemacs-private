@@ -52,6 +52,8 @@
         ;; (counsel-gtags :location local
         ;;                :toggle (configuration-layer/package-usedp 'ivy))
         eopengrok
+        rtags
+        company-rtags
         ))
 
 (defun zilongshanren-programming/post-init-robe ()
@@ -133,7 +135,7 @@
 
 (defun zilongshanren-programming/post-init-python ()
   (add-hook 'python-mode-hook #'(lambda () (modify-syntax-entry ?_ "w")))
-  ;; if you use pyton3, then you could comment the following line
+  ;; if you use python3, then you could comment the following line
   (setq python-shell-interpreter "python"))
 
 (defun zilongshanren-programming/post-init-js-doc ()
@@ -218,8 +220,8 @@
     (set-face-background 'secondary-selection "gray")
     (setq-default yas-prompt-functions '(yas-ido-prompt yas-dropdown-prompt))
     (mapc #'(lambda (hook) (remove-hook hook 'spacemacs/load-yasnippet)) '(prog-mode-hook
-                                                                           org-mode-hook
-                                                                           markdown-mode-hook))
+                                                                       org-mode-hook
+                                                                       markdown-mode-hook))
 
     (spacemacs/add-to-hooks 'zilongshanren/load-yasnippet '(prog-mode-hook
                                                             markdown-mode-hook
@@ -298,7 +300,7 @@
 (defun zilongshanren-programming/post-init-cmake-mode ()
   (progn
     (spacemacs/declare-prefix-for-mode 'cmake-mode
-                                       "mh" "docs")
+      "mh" "docs")
     (spacemacs/set-leader-keys-for-major-mode 'cmake-mode
       "hd" 'cmake-help)
     (add-hook 'cmake-mode-hook (function cmake-rename-buffer))))
@@ -445,7 +447,7 @@
     :init
     (progn
       (spacemacs/declare-prefix-for-mode 'js2-mode
-                                         "ms" "REPL")
+        "ms" "REPL")
       (spacemacs/set-leader-keys-for-major-mode 'js2-mode
         "sb" 'nodejs-repl-eval-buffer
         "sf" 'nodejs-repl-eval-function
@@ -558,10 +560,10 @@
     :defer t
     :init
     (progn
-     (add-hook 'c-mode-hook 'counsel-gtags-mode)
-     (add-hook 'c++-mode-hook 'counsel-gtags-mode)
-     (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
-     (spacemacs/counsel-gtags-define-keys-for-mode 'c-mode))))
+      (add-hook 'c-mode-hook 'counsel-gtags-mode)
+      (add-hook 'c++-mode-hook 'counsel-gtags-mode)
+      (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
+      (spacemacs/counsel-gtags-define-keys-for-mode 'c-mode))))
 
 (defun zilongshanren-programming/init-gulpjs ()
   (use-package gulpjs
@@ -605,7 +607,7 @@
            ("/usr/include/" "/usr/local/include/" "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" "/usr/include/c++/5.4.0/" "/usr/local/Cellar/gcc/6.3.0/include/c++/6.3.0/")))
     (setq company-c-headers-path-user
           (quote
-           ("/Users/cranehuang/Tencent/taf/taf_v3/include/")))))
+           ("/usr/local/taf/include" "/usr/local/wbl/include" "/Users/guanghui/cocos2d-x/cocos" "." "/Users/guanghui/cocos2d-x/cocos/audio/include/")))))
 
 (defun zilongshanren-programming/init-kotlin-mode ()
   (use-package kotlin-mode
@@ -760,10 +762,37 @@ Bring the point 2 lines below the current point."
                                crane/header-author           ; // Original Author
                                crane/header-timestamp        ; // Timestamp: <>
                                crane/header-description      ; // Description
-                               ;; crane/header-sep-line         ; // ---------------
+
                                ;; crane/header-version          ; // Revision
                                ;; crane/header-copyright        ; // Copyright (c)
                                crane/header-sep-line         ; // ---------------
                                crane/header-position-point))
 
       (crane/turn-on-auto-headers))))
+
+(defun zilongshanren-programming/init-company-rtags ()
+  (use-package company-rtags
+    :defer t))
+
+(defun zilongshanren-programming/init-rtags ()
+  "Initialize my package"
+  (use-package rtags
+    :init
+    ;;(evil-set-initial-state 'rtags-mode 'emacs)
+    ;;(rtags-enable-standard-keybindings c-mode-base-map)
+    :ensure company
+    :config
+    (progn
+      (require 'company-rtags)
+      (add-to-list 'company-backends 'company-rtags)
+      (setq company-rtags-begin-after-member-access t)
+      (setq rtags-completions-enabled t)
+      ;;(rtags-diagnostics)
+      (define-key evil-normal-state-map (kbd "RET") 'rtags-select-other-window)
+      (define-key evil-normal-state-map (kbd "M-RET") 'rtags-select)
+      (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
+      (crane/rtags-evil-standard-keybindings 'c-mode)
+      (crane/rtags-evil-standard-keybindings 'c++-mode)
+      )
+    )
+  )

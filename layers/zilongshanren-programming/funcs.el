@@ -284,3 +284,37 @@ version 2015-08-21"
       "gs" 'counsel-gtags-find-symbol
       "gS" 'counsel-gtags-pop-stack)))
 
+
+(defun crane/rtags-evil-standard-keybindings (mode)
+  (spacemacs/set-leader-keys-for-major-mode mode
+    "rs" 'rtags-find-symbol-at-point
+    "rr" 'rtags-find-references-at-point
+    "rv" 'rtags-find-virtuals-at-point
+    "rV" 'rtags-print-enum-value-at-point
+    "r/" 'rtags-find-all-references-at-point
+    "rC" 'rtags-cycle-overlays-on-screen
+    "rS" 'rtags-find-symbol
+    "rR" 'rtags-find-references
+    "r[" 'rtags-location-stack-back
+    "r]" 'rtags-location-stack-forward
+    "rd" 'rtags-diagnostics
+    "rg" 'rtags-guess-function-at-point
+    "rp" 'rtags-set-current-project
+    "rP" 'rtags-print-dependencies
+    "re" 'rtags-reparse-file
+    "rE" 'rtags-preprocess-file
+    "rN" 'rtags-rename-symbol
+    "ri" 'rtags-symbol-info
+    "rM" 'rtags-display-summary
+    "rO" 'rtags-goto-offset
+    "rf" 'rtags-find-file
+    "rF" 'rtags-fixit
+    "rL" 'rtags-copy-and-print-current-location
+    "rX" 'rtags-fix-fixit-at-point
+    "rB" 'rtags-show-rtags-buffer
+    "rI" 'rtags-imenu
+    "rt" 'rtags-taglist
+    "rh" 'rtags-print-class-hierarchy
+    "ra" 'rtags-print-source-arguments
+    )
+  )
