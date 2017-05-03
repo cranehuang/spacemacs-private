@@ -516,8 +516,11 @@
 
 (defun zilongshanren-programming/post-init-ycmd ()
   (progn
+    (crane/ycmd-evil-keybindings 'c-mode)
+    (crane/ycmd-evil-keybindings 'c++-mode)
     (setq ycmd-tag-files 'auto)
     (setq ycmd-request-message-level -1)
+    (setq ycmd-confirm-fixit nil)
     (set-variable 'ycmd-server-command `("python3.5" ,(expand-file-name "~/Githubs/ycmd/ycmd/__main__.py")))
     (setq company-backends-c-mode-common '((company-c-headers
                                             company-dabbrev-code

@@ -284,6 +284,9 @@ version 2015-08-21"
       "gs" 'counsel-gtags-find-symbol
       "gS" 'counsel-gtags-pop-stack)))
 
+(defun crane/ycmd-evil-keybindings (mode)
+  (spacemacs/set-leader-keys-for-major-mode mode
+    "yf" 'ycmd-fixit))
 
 (defun crane/rtags-evil-standard-keybindings (mode)
   (spacemacs/set-leader-keys-for-major-mode mode
