@@ -64,9 +64,9 @@ values."
      docker
      ;; latex
      deft
-     markdown
+     (markdown :variables markdown-live-preview-engine 'vmd)
      org
-     shaders
+     ;; shaders
      yaml
      react
      (python :variables
@@ -324,7 +324,7 @@ values."
    ;; List of search tool executable names. Spacemacs uses the first installed
    ;; tool of the list. Supported tools are `rg', `ag', `pt', `ack' and `grep'.
    ;; (default '("rg" "ag" "pt" "ack" "grep"))
-   dotspacemacs-search-tools '("ag" "pt" "ack" "grep")
+   dotspacemacs-search-tools '("rg" "ag" "pt" "ack" "grep")
    ;; The default package repository used if no explicit repository has been
    ;; specified with an installed package.
    ;; Not used for now. (default nil)
@@ -346,6 +346,9 @@ values."
   ;; (setq tramp-mode nil)
   (setq tramp-ssh-controlmaster-options
         "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
+
+  (setenv "GTAGSLIBPATH" "/Users/cranehuang/.gtags")
+  (setenv "GTAGSFORCECPP" "true")
 
   ;; ss proxy. But it will cause anacond-mode failed.
   (setq socks-server '("Default server" "127.0.0.1" 1080 5))
@@ -382,18 +385,23 @@ values."
 
   (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 
+  (setq evil-insert-state-cursor '("chartreuse3" (bar . 2)))
+
+  (add-hook 'c++-mode-hook 'ycmd-mode)
+  (add-hook 'c-mode-hook 'ycmd-mode)
   (add-hook 'ycmd-mode-hook 'flycheck-mode)
   ;; temp fix for ivy-switch-buffer
   ;; (spacemacs/set-leader-keys "bb" 'helm-mini)
 
   (setq python-shell-interpreter "ipython"
-        python-shell-interpreter-args "-i")
+        python-shell-interpreter-args "-i --simple-prompt --pylab")
   (global-hungry-delete-mode t)
   (spacemacs|diminish helm-gtags-mode)
   (spacemacs|diminish ggtags-mode)
   (spacemacs|diminish which-key-mode)
   (spacemacs|diminish spacemacs-whitespace-cleanup-mode)
   (spacemacs|diminish counsel-mode)
+  (spacemacs|diminish wakatime-mode)
 
   (evilified-state-evilify-map special-mode-map :mode special-mode)
 
