@@ -793,7 +793,7 @@ Bring the point 2 lines below the current point."
       ;;(rtags-diagnostics)
       (define-key evil-normal-state-map (kbd "RET") 'rtags-select-other-window)
       (define-key evil-normal-state-map (kbd "M-RET") 'rtags-select)
-      (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
+      ;; (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
       (crane/rtags-evil-standard-keybindings 'c-mode)
       (crane/rtags-evil-standard-keybindings 'c++-mode)
       )
