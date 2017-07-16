@@ -317,7 +317,7 @@
   (setq eldoc-idle-delay 0.4))
 
 
-(defun zilongshanren-programming/init-impatient-mode ()
+(defun zilongshanren-programming/post-init-impatient-mode ()
   "Initialize impatient mode"
   (use-package impatient-mode
     :init
