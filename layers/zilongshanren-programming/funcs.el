@@ -267,22 +267,37 @@ version 2015-08-21"
       ;; html project donot need C++ tags
       (setq tags-table-list (list (my-create-tags-if-needed "~/Github/fireball/engine/cocos2d")))))))
 
-(defun spacemacs/counsel-gtags-maybe-dwim ()
-  (interactive)
-  (let (gtags-enable-by-default
-        (call-interactively 'counsel-gtags-dwim))))
+;; (defun spacemacs/counsel-gtags-maybe-dwim ()
+;;   (interactive)
+;;   (let (gtags-enable-by-default
+;;         (call-interactively 'counsel-gtags-dwim))))
+
+;; (defun spacemacs/counsel-gtags-define-keys-for-mode (mode)
+;;   (when (fboundp mode)
+;;     (let ((jumpl (intern (format "spacemacs-jump-handlers-%S" mode))))
+;;       (add-to-list jumpl 'spacemacs/counsel-gtags-maybe-dwim 'append))
+
+;;     (spacemacs/set-leader-keys-for-major-mode mode
+;;       "gc" 'counsel-gtags-create-tags
+;;       "gd" 'counsel-gtags-find-definition
+;;       "gr" 'counsel-gtags-find-reference
+;;       "gs" 'counsel-gtags-find-symbol
+;;       "gS" 'counsel-gtags-pop-stack)))
 
 (defun spacemacs/counsel-gtags-define-keys-for-mode (mode)
-  (when (fboundp mode)
-    (let ((jumpl (intern (format "spacemacs-jump-handlers-%S" mode))))
-      (add-to-list jumpl 'spacemacs/counsel-gtags-maybe-dwim 'append))
-
-    (spacemacs/set-leader-keys-for-major-mode mode
-      "gc" 'counsel-gtags-create-tags
-      "gd" 'counsel-gtags-find-definition
-      "gr" 'counsel-gtags-find-reference
-      "gs" 'counsel-gtags-find-symbol
-      "gS" 'counsel-gtags-pop-stack)))
+  "Define counsel-gtags key binding for Mode"
+  (spacemacs/set-leader-keys-for-major-mode mode
+    "gC" 'counsel-gtags-create-tags
+    ;; "gd" 'counsel-gtags-find-definition
+    ;; find definition very slow, so use dwim
+    "gd" 'counsel-gtags-dwim
+    "gr" 'counsel-gtags-find-reference
+    "gS" 'counsel-gtags-find-symbol
+    "gs" 'counsel-gtags-dwim
+    "gu" 'counsel-gtags-update-tags
+    "gf" 'counsel-gtags-find-file
+    "gn" 'counsel-gtags-go-forward
+    "gp" 'counsel-gtags-go-backward))
 
 (defun crane/ycmd-evil-keybindings (mode)
   (spacemacs/set-leader-keys-for-major-mode mode

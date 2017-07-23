@@ -48,9 +48,8 @@
         ;; editorconfig
         robe
         kotlin-mode
-        (counsel-gtags :location local)
-        ;; (counsel-gtags :location local
-        ;;                :toggle (configuration-layer/package-usedp 'ivy))
+        ;; (counsel-gtags :location local)
+        counsel-gtags
         eopengrok
         rtags
         company-rtags
@@ -556,13 +555,11 @@
 
 (defun zilongshanren-programming/init-counsel-gtags ()
   (use-package counsel-gtags
-    :commands (counsel-gtags-create-tags counsel-gtags-find-definition
-                                         counsel-gtags-find-reference
-                                         counsel-gtags-find-symbol
-                                         counsel-gtags-pop-stack)
     :defer t
     :init
     (progn
+      (setq counsel-gtags-auto-update t
+            counsel-gtags-ignore-case t)
       (add-hook 'c-mode-hook 'counsel-gtags-mode)
       (add-hook 'c++-mode-hook 'counsel-gtags-mode)
       (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
