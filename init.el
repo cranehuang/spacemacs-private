@@ -408,6 +408,10 @@ values."
 
   (add-to-list 'auto-mode-alist
                '("Capstanfile\\'" . yaml-mode))
+  ;; (setq ycmd--log-enabled t)
+  (setq request-message-level -1)
+  ;; (setq magithub-debug-mode t)
+  (setq magithub-api-timeout 5)
 
   (defun js-indent-line ()
     "Indent the current line as JavaScript."
@@ -447,7 +451,7 @@ values."
   (add-to-list 'auto-mode-alist
                '("\\.conf\\'" . nxml-web-mode))
 
-  (global-wakatime-mode)
+  ;; (global-wakatime-mode)
   ;; (add-hook 'text-mode-hook 'spacemacs/toggle-spelling-checking-on)
 
   ;; https://github.com/syl20bnr/spacemacs/issues/7749
