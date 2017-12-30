@@ -14,8 +14,8 @@
 (defconst zilongshanren-org-packages
   '(
     org
-    org-mac-link
-    org-octopress
+    ;; org-mac-link
+    ;; org-octopress
     org-pomodoro
     deft
     ;; org-tree-slide
@@ -401,35 +401,35 @@ holding contextual information."
 
       )))
 
-(defun zilongshanren-org/init-org-mac-link ()
-  (use-package org-mac-link
-    :commands org-mac-grab-link
-    :init
-    (progn
-      (add-hook 'org-mode-hook
-                (lambda ()
-                  (define-key org-mode-map (kbd "C-c g") 'org-mac-grab-link))))
-    :defer t))
+;; (defun zilongshanren-org/init-org-mac-link ()
+;;   (use-package org-mac-link
+;;     :commands org-mac-grab-link
+;;     :init
+;;     (progn
+;;       (add-hook 'org-mode-hook
+;;                 (lambda ()
+;;                   (define-key org-mode-map (kbd "C-c g") 'org-mac-grab-link))))
+;;     :defer t))
 
 (defun zilongshanren-org/post-init-ox-reveal ()
   (setq org-reveal-root "file:///Users/guanghui/.emacs.d/reveal-js"))
 
-(defun zilongshanren-org/init-org-octopress ()
-  (use-package org-octopress
-    :commands (org-octopress org-octopress-setup-publish-project)
-    :init
-    (progn
-      (evilified-state-evilify org-octopress-summary-mode org-octopress-summary-mode-map)
-      (add-hook 'org-octopress-summary-mode-hook
-                #'(lambda () (local-set-key (kbd "q") 'bury-buffer)))
-      (setq org-blog-dir blog-admin-dir)
-      (setq org-octopress-directory-top org-blog-dir)
-      (setq org-octopress-directory-posts (concat org-blog-dir "source/_posts"))
-      (setq org-octopress-directory-org-top org-blog-dir)
-      (setq org-octopress-directory-org-posts (expand-file-name  "blog" blog-admin-dir))
-      (setq org-octopress-setup-file (concat org-blog-dir "setupfile.org"))
+;; (defun zilongshanren-org/init-org-octopress ()
+;;   (use-package org-octopress
+;;     :commands (org-octopress org-octopress-setup-publish-project)
+;;     :init
+;;     (progn
+;;       (evilified-state-evilify org-octopress-summary-mode org-octopress-summary-mode-map)
+;;       (add-hook 'org-octopress-summary-mode-hook
+;;                 #'(lambda () (local-set-key (kbd "q") 'bury-buffer)))
+;;       (setq org-blog-dir blog-admin-dir)
+;;       (setq org-octopress-directory-top org-blog-dir)
+;;       (setq org-octopress-directory-posts (concat org-blog-dir "source/_posts"))
+;;       (setq org-octopress-directory-org-top org-blog-dir)
+;;       (setq org-octopress-directory-org-posts (expand-file-name  "blog" blog-admin-dir))
+;;       (setq org-octopress-setup-file (concat org-blog-dir "setupfile.org"))
 
-      )))
+;;       )))
 
 
 (defun zilongshanren-org/init-org-tree-slide ()

@@ -53,6 +53,15 @@
         eopengrok
         rtags
         company-rtags
+
+        company-lsp
+        haskell-mode
+        helm-xref
+        lsp-mode
+        lsp-haskell
+        lsp-rust
+        (lsp-ui :location local)
+        (cquery :location local)
         ))
 
 (defun zilongshanren-programming/post-init-robe ()
@@ -120,6 +129,7 @@
 
 (defun zilongshanren-programming/post-init-dumb-jump ()
   (setq dumb-jump-selector 'ivy)
+  (advice-add 'dumb-jump-go :around #'my-advice/dumb-jump-go)
   (defun my-dumb-jump ()
     (interactive)
     (evil-set-jump)
@@ -219,8 +229,8 @@
     (set-face-background 'secondary-selection "gray")
     (setq-default yas-prompt-functions '(yas-ido-prompt yas-dropdown-prompt))
     (mapc #'(lambda (hook) (remove-hook hook 'spacemacs/load-yasnippet)) '(prog-mode-hook
-                                                                       org-mode-hook
-                                                                       markdown-mode-hook))
+                                                                      org-mode-hook
+                                                                      markdown-mode-hook))
 
     (spacemacs/add-to-hooks 'zilongshanren/load-yasnippet '(prog-mode-hook
                                                             markdown-mode-hook
@@ -503,7 +513,11 @@
     (setq c-basic-offset 4)
     (c-set-offset 'substatement-open 0)
     (with-eval-after-load 'c++-mode
-      (define-key c++-mode-map (kbd "s-.") 'company-ycmd)))
+      (define-key c++-mode-map (kbd "s-.") 'company-ycmd))
+    (dolist (mode c-c++-modes)
+      (spacemacs/declare-prefix-for-mode mode "mx" "format")
+      (spacemacs/set-leader-keys-for-major-mode mode
+        "xf" 'clang-format-region)))
 
   )
 
@@ -796,3 +810,136 @@ Bring the point 2 lines below the current point."
       )
     )
   )
+
+(defun zilongshanren-programming/init-company-lsp ()
+  (use-package company-lsp
+    :config
+    (spacemacs|add-company-backends :backends company-lsp :modes c-mode-common)))
+
+(defun zilongshanren-programming/post-init-haskell-mode ()
+  (with-eval-after-load 'haskell-mode
+    (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
+    ;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+    ;; (add-hook 'haskell-mode-hook 'lsp-mode)
+    ;; (intero-global-mode 1)
+    ;; (add-hook 'haskell-mode-hook 'helm-kythe-mode)
+    ;; (add-hook 'haskell-mode-hook 'intero-mode)
+    ;; (add-to-list 'spacemacs-jump-handlers-haskell-mode 'intero-goto-definition)
+    ;; (add-to-list 'spacemacs-jump-handlers-haskell-mode 'helm-kythe-find-definitions)
+    ;; (add-to-list 'spacemacs-reference-handlers-haskell-mode 'helm-kythe-find-references)
+    )
+  ;; (load "~/Dev/Emacs/emacs-helm-kythe/helm-kythe.el" t)  ;; TODO
+  ;; (spacemacs/set-leader-keys-for-major-mode 'haskell-mode "k" helm-kythe-map)
+  )
+
+(defun zilongshanren-programming/init-helm-xref ()
+  (use-package helm-xref
+    :config
+    ;; This is required to make xref-find-references work in helm-mode.
+    ;; In helm-mode, it gives a prompt and asks the identifier (which has no text property) and then passes it to lsp-mode, which requires the text property at point to locate the references.
+    ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=29619
+    (setq xref-prompt-for-identifier '(not xref-find-definitions xref-find-definitions-other-window xref-find-definitions-other-frame xref-find-references spacemacs/jump-to-definition spacemacs/jump-to-reference))
+
+    (setq xref-show-xrefs-function 'helm-xref-show-xrefs)
+    )
+  )
+
+(defun zilongshanren-programming/init-lsp-mode ()
+  (use-package lsp-mode
+    :config
+    (add-to-list 'spacemacs-jump-handlers-d-mode 'company-dcd-goto-definition)
+
+;;; Override
+
+    (dolist (mode '("c" "c++" "go" "haskell" "javascript" "python" "rust"))
+      (let ((handler (intern (format "spacemacs-jump-handlers-%s-mode" mode))))
+        (add-to-list handler 'xref-find-definitions))
+      (let ((handler (intern (format "spacemacs-reference-handlers-%s-mode" mode))))
+        (add-to-list handler 'xref-find-references)))
+
+    (with-eval-after-load 'helm-imenu
+;;; Override
+      ;; Revert removing *Rescan*
+      (defun helm-imenu-candidates (&optional buffer)
+        (with-current-buffer (or buffer helm-current-buffer)
+          (let ((tick (buffer-modified-tick)))
+            (if (eq helm-cached-imenu-tick tick)
+                helm-cached-imenu-candidates
+              (setq imenu--index-alist nil)
+              (prog1 (setq helm-cached-imenu-candidates
+                           (let ((index (imenu--make-index-alist t)))
+                             (helm-imenu--candidates-1 index)))
+                (setq helm-cached-imenu-tick tick))))))
+
+;;; Override
+      ;; No (user-error "No word list given") if pattern is empty
+      (defun xref-find-apropos (pattern)
+        "Find all meaningful symbols that match PATTERN.
+The argument has the same meaning as in `apropos'."
+        (interactive (list (read-string
+                            "Search for pattern (word list or regexp): "
+                            nil 'xref--read-pattern-history)))
+        (require 'apropos)
+        (xref--find-xrefs pattern 'apropos pattern nil))
+      )
+    ))
+
+(defun zilongshanren-programming/init-lsp-ui ()
+  (use-package lsp-ui
+    :after lsp-mode
+    :config
+    (setq lsp-line-ignore-duplicate t)
+    (set-face-attribute 'lsp-line-symbol nil :foreground "grey30" :box nil)
+    (set-face-attribute 'lsp-line-current-symbol nil :foreground "grey38" :box nil)
+    (when (internal-lisp-face-p 'lsp-line-contents)
+      (set-face-attribute 'lsp-line-contents nil :foreground "grey35")
+      (set-face-attribute 'lsp-line-current-contents nil :foreground "grey43"))
+
+    (dolist (mode c-c++-modes)
+      (spacemacs/set-leader-keys-for-major-mode mode
+        "la" 'xref-find-apropos
+        "lb" (defun crane-cquery/base ()
+               (interactive)
+               (cquery-xref-find-locations-with-position "$cquery/base"))
+        "lc" (defun crane-cquery/callers ()
+               (interactive)
+               (cquery-xref-find-locations-with-position "$cquery/callers"))
+        "ld" (defun crane-cquery/derived ()
+
+               (cquery-xref-find-locations-with-position "$cquery/derived"))
+        "ll" #'lsp-line-mode
+        "lv" (defun crane-cquery/vars ()
+               (interactive)
+               (cquery-xref-find-locations-with-position "$cquery/vars"))
+        ))
+    ))
+
+
+(defun zilongshanren-programming/init-lsp-haskell ()
+  (use-package lsp-haskell
+    :mode ("\\.hs\\'" . haskell-mode)
+    :after lsp-mode
+    :config
+    )
+  )
+
+(defun zilongshanren-programming/init-lsp-rust ()
+  (use-package lsp-rust
+    :mode ("\\.rs\\'" . rust-mode)
+    :after lsp-mode
+    :config
+    (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+    )
+  )
+
+
+(defun zilongshanren-programming/init-cquery ()
+  (use-package cquery
+    :init
+    :config
+    (progn
+      (setq cquery-executable "/Users/cranehuang/Githubs/cquery/build/release/bin/cquery")
+      (setq cquery-resource-dir "/Users/cranehuang/Githubs/cquery/clang_resource_dir/")
+      (setq cquery-cache-dir ".spacemacs/cquery_cached_index/")
+      (require 'lsp-imenu)
+      (add-hook 'c-mode-common-hook #'crane//enable-cquery-if-compile-commands-json))))
