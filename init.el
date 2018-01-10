@@ -72,14 +72,15 @@ values."
      react
      (python :variables
              python-test-runner '(nose pytest))
-     vagrant
+     ;; vagrant
      ipython-notebook
      ycmd
+     semantic
      (dash :variables
            ;; helm-dash-docset-newpath "/Users/cranehuang/Library/Application Support/Dash/DocSets"
            helm-dash-browser-func 'eww)
-     (ruby :variables ruby-version-manager 'chruby)
-     ruby-on-rails
+     ;; (ruby :variables ruby-version-manager 'chruby)
+     ;; ruby-on-rails
      lua
      html
      javascript
@@ -91,6 +92,9 @@ values."
      racket
      (c-c++ :variables
             c-c++-enable-clang-support t
+            c-c++-enable-rtags-support t
+            c-c++-enable-cmake-ide-support t
+            c-c++-enable-clang-format-on-save t
             c-c++-default-mode-for-headers 'c++-mode)
      zilongshanren
      (chinese :packages youdao-dictionary fcitx
@@ -403,6 +407,7 @@ values."
   (spacemacs|diminish spacemacs-whitespace-cleanup-mode)
   (spacemacs|diminish counsel-mode)
   (spacemacs|diminish wakatime-mode)
+  (spacemacs|diminish counsel-gtags-mode)
 
   (evilified-state-evilify-map special-mode-map :mode special-mode)
 
@@ -412,6 +417,10 @@ values."
   (setq request-message-level -1)
   ;; (setq magithub-debug-mode t)
   (setq magithub-api-timeout 5)
+  (remove-hook 'ycmd-mode-hook 'ycmd-eldoc-setup)
+  (setq company-clang-arguments '("/usr/include/" "/usr/local/include/"
+                                  "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
+                                  "/usr/include/c++/5.4.0/" "/usr/local/Cellar/gcc/6.3.0/include/c++/6.3.0/"))
 
   (defun js-indent-line ()
     "Indent the current line as JavaScript."

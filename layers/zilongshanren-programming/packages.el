@@ -49,10 +49,10 @@
         robe
         kotlin-mode
         ;; (counsel-gtags :location local)
-        counsel-gtags
+        ;; counsel-gtags
         eopengrok
-        rtags
-        company-rtags
+        ;; rtags
+        ;; company-rtags
 
         company-lsp
         haskell-mode
@@ -567,17 +567,17 @@
       (spacemacs/set-leader-keys-for-major-mode 'js2-mode
         "gd" 'etags-select-find-tag-at-point))))
 
-(defun zilongshanren-programming/init-counsel-gtags ()
-  (use-package counsel-gtags
-    :defer t
-    :init
-    (progn
-      (setq counsel-gtags-auto-update t
-            counsel-gtags-ignore-case t)
-      (add-hook 'c-mode-hook 'counsel-gtags-mode)
-      (add-hook 'c++-mode-hook 'counsel-gtags-mode)
-      (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
-      (spacemacs/counsel-gtags-define-keys-for-mode 'c-mode))))
+;; (defun zilongshanren-programming/init-counsel-gtags ()
+;;   (use-package counsel-gtags
+;;     :defer t
+;;     :init
+;;     (progn
+;;       (setq counsel-gtags-auto-update t
+;;             counsel-gtags-ignore-case t)
+;;       (add-hook 'c-mode-hook 'counsel-gtags-mode)
+;;       (add-hook 'c++-mode-hook 'counsel-gtags-mode)
+;;       (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
+;;       (spacemacs/counsel-gtags-define-keys-for-mode 'c-mode))))
 
 (defun zilongshanren-programming/init-gulpjs ()
   (use-package gulpjs
@@ -784,32 +784,32 @@ Bring the point 2 lines below the current point."
 
       (crane/turn-on-auto-headers))))
 
-(defun zilongshanren-programming/init-company-rtags ()
-  (use-package company-rtags
-    :defer t))
+;; (defun zilongshanren-programming/init-company-rtags ()
+;;   (use-package company-rtags
+;;     :defer t))
 
-(defun zilongshanren-programming/init-rtags ()
-  "Initialize my package"
-  (use-package rtags
-    :init
-    ;;(evil-set-initial-state 'rtags-mode 'emacs)
-    ;;(rtags-enable-standard-keybindings c-mode-base-map)
-    :ensure company
-    :config
-    (progn
-      (require 'company-rtags)
-      (add-to-list 'company-backends 'company-rtags)
-      (setq company-rtags-begin-after-member-access t)
-      (setq rtags-completions-enabled t)
-      ;;(rtags-diagnostics)
-      (define-key evil-normal-state-map (kbd "RET") 'rtags-select-other-window)
-      (define-key evil-normal-state-map (kbd "M-RET") 'rtags-select)
-      ;; (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
-      (crane/rtags-evil-standard-keybindings 'c-mode)
-      (crane/rtags-evil-standard-keybindings 'c++-mode)
-      )
-    )
-  )
+;; (defun zilongshanren-programming/init-rtags ()
+;;   "Initialize my package"
+;;   (use-package rtags
+;;     :init
+;;     ;;(evil-set-initial-state 'rtags-mode 'emacs)
+;;     ;;(rtags-enable-standard-keybindings c-mode-base-map)
+;;     :ensure company
+;;     :config
+;;     (progn
+;;       (require 'company-rtags)
+;;       (add-to-list 'company-backends 'company-rtags)
+;;       (setq company-rtags-begin-after-member-access t)
+;;       (setq rtags-completions-enabled t)
+;;       ;;(rtags-diagnostics)
+;;       (define-key evil-normal-state-map (kbd "RET") 'rtags-select-other-window)
+;;       (define-key evil-normal-state-map (kbd "M-RET") 'rtags-select)
+;;       ;; (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
+;;       (crane/rtags-evil-standard-keybindings 'c-mode)
+;;       (crane/rtags-evil-standard-keybindings 'c++-mode)
+;;       )
+;;     )
+;;   )
 
 (defun zilongshanren-programming/init-company-lsp ()
   (use-package company-lsp
