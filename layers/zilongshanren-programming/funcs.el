@@ -267,23 +267,6 @@ version 2015-08-21"
       ;; html project donot need C++ tags
       (setq tags-table-list (list (my-create-tags-if-needed "~/Github/fireball/engine/cocos2d")))))))
 
-;; (defun spacemacs/counsel-gtags-maybe-dwim ()
-;;   (interactive)
-;;   (let (gtags-enable-by-default
-;;         (call-interactively 'counsel-gtags-dwim))))
-
-;; (defun spacemacs/counsel-gtags-define-keys-for-mode (mode)
-;;   (when (fboundp mode)
-;;     (let ((jumpl (intern (format "spacemacs-jump-handlers-%S" mode))))
-;;       (add-to-list jumpl 'spacemacs/counsel-gtags-maybe-dwim 'append))
-
-;;     (spacemacs/set-leader-keys-for-major-mode mode
-;;       "gc" 'counsel-gtags-create-tags
-;;       "gd" 'counsel-gtags-find-definition
-;;       "gr" 'counsel-gtags-find-reference
-;;       "gs" 'counsel-gtags-find-symbol
-;;       "gS" 'counsel-gtags-pop-stack)))
-
 (defun spacemacs/counsel-gtags-define-keys-for-mode (mode)
   "Define counsel-gtags key binding for Mode"
   (spacemacs/set-leader-keys-for-major-mode mode
@@ -395,21 +378,17 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
     )
   )
 
-(defun crane//enable-cquery-if-compile-commands-json ()
-  (when-let
-      ((_ (not (and (boundp 'lsp-mode) lsp-mode)))
-       (_ (cl-notany (lambda (x) (string-match-p x buffer-file-name)) my-cquery-blacklist))
-       (root (projectile-project-root))
-       (_ (or (file-exists-p (concat root "compile_commands.json"))
-              (file-exists-p (concat root ".cquery")))))
-    (lsp-cquery-enable)
-    ;; (lsp-enable-imenu)
-    ))
-
+(defun cquery//enable ()
+  (when
+      (and buffer-file-name
+           (or (locate-dominating-file default-directory "compile_commands.json")
+               (locate-dominating-file default-directory ".cquery")))
+    (lsp-cquery-enable)))
+
 
 ;; xref-find-apropos (workspace/symbol)
 
-(defun crane/highlight-pattern-in-text (pattern line)
+(defun my/highlight-pattern-in-text (pattern line)
   (when (> (length pattern) 0)
     (let ((i 0))
       (while (string-match pattern line i) ;
@@ -437,51 +416,97 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
                  (xref-make-file-location (string-remove-prefix "file://" uri)
                                           (1+ (gethash "line" start))
                                           (gethash "character" start))))))
+(defun my/ffap ()
+  (interactive)
+  (let ((filename (ffap-guess-file-name-at-point)))
+    (when (not filename)
+      (user-error "No file at point"))
+    (ffap filename)))
 
+
+;;; realgud
+
+(defun my/realgud-eval-nth-name-forward (n)
+  (interactive "p")
+  (save-excursion
+    (let (name)
+      (while (and (> n 0) (< (point) (point-max)))
+        (let ((p (point)))
+          (if (not (c-forward-name))
+              (progn
+                (c-forward-token-2)
+                (when (= (point) p) (forward-char 1)))
+            (setq name (buffer-substring-no-properties p (point)))
+            (cl-decf n 1))))
+      (when name
+        (realgud:cmd-eval name)
+        nil))))
+
+(defun my/realgud-eval-nth-name-backward (n)
+  (interactive "p")
+  (save-excursion
+    (let (name)
+      (while (and (> n 0) (> (point) (point-min)))
+        (let ((p (point)))
+          (c-backward-token-2)
+          (when (= (point) p) (backward-char 1))
+          (setq p (point))
+          (when (c-forward-name)
+            (setq name (buffer-substring-no-properties p (point)))
+            (goto-char p)
+            (cl-decf n 1))))
+      (when name
+        (realgud:cmd-eval name)
+        nil))))
+
+(defun my/realgud-eval-region-or-word-at-point ()
+  (interactive)
+  (when-let
+      ((cmdbuf (realgud-get-cmdbuf))
+       (process (get-buffer-process cmdbuf))
+       (expr
+        (if (evil-visual-state-p)
+            (let ((range (evil-visual-range)))
+              (buffer-substring-no-properties (evil-range-beginning range)
+                                              (evil-range-end range)))
+          (word-at-point)
+          )))
+    (with-current-buffer cmdbuf
+      (setq realgud:process-filter-save (process-filter process))
+      (set-process-filter process 'realgud:eval-process-output))
+    (realgud:cmd-eval expr)
+    ))
+
+
+;;; elisp
+
+(defun my/realtime-elisp-doc-function ()
+  (let ((w (selected-window)))
+    (when-let (s (intern-soft (current-word)))
+      (cond
+       ((fboundp s) (describe-function s))
+       ((boundp s) (describe-variable s))
+       )
+      (select-window w)
+      nil)))
+
+(defun my/realtime-elisp-doc ()
+  (interactive)
+  (when (eq major-mode 'emacs-lisp-mode)
+    (if (advice-function-member-p #'my/realtime-elisp-doc-function eldoc-documentation-function)
+        (remove-function (local 'eldoc-documentation-function) #'my/realtime-elisp-doc-function)
+      (add-function :after-while (local 'eldoc-documentation-function) #'my/realtime-elisp-doc-function))))
+
+
 ;;; xref
 
-(defvar my-xref--jumps (make-hash-table)
-  "Hashtable which stores all jumps on a per window basis.")
-
-(defmacro my-xref//with-evil-jumps (&rest body)
-  "Make `evil-jumps.el' commands work on `my-xref--jumps'."
-  (declare (indent 1))
-  `(let ((evil--jumps-window-jumps ,my-xref--jumps))
-     ,@body
-     ))
-
-(with-eval-after-load 'evil-jumps
-  (evil-define-motion my-xref/evil-jump-backward (count)
-    (my-xref//with-evil-jumps
-     (evil--jump-backward count)
-     (run-hooks 'xref-after-return-hook)
-     ))
-
-  (evil-define-motion my-xref/evil-jump-forward (count)
-    (my-xref//with-evil-jumps
-     (evil--jump-forward count)
-     (run-hooks 'xref-after-return-hook)
-     )))
-
-(defun my-xref/jump-backward ()
+(defun my-xref/find-definitions ()
   (interactive)
-  (pcase major-mode
-    ((or c-mode c++-mode)
-     (if lsp-mode
-         (my-xref/evil-jump-backward)
-       (helm-gtags-pop-stack)))
-    (_ (helm-gtags-pop-stack))
-    ))
+  (if lsp-mode (lsp-ui-peek-find-definitions) (spacemacs/jump-to-definition)))
 
-(defun my-xref/jump-forward ()
+(defun my-xref/find-references ()
   (interactive)
-  (pcase major-mode
-    ((or c-mode c++-mode)
-     (if lsp-mode
-         (my-xref/evil-jump-forward)
-       (evil-jump-forward)))
-    (_ (evil-jump-forward))
-    ))
+  (if lsp-mode (lsp-ui-peek-find-references) (spacemacs/jump-to-definition)))
 
 ;;; Override
 ;; This function is transitively called by xref-find-{definitions,references,apropos}
@@ -493,12 +518,12 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
     nil)
    ((and (not (cdr xrefs)) (not always-show-list))
     ;; PATCH
-    (my-xref//with-evil-jumps (evil-set-jump))
+    (lsp-ui-peek--with-evil-jumps (evil-set-jump))
 
     (xref--pop-to-location (car xrefs) display-action))
    (t
     ;; PATCH
-    (my-xref//with-evil-jumps (evil-set-jump))
+    (lsp-ui-peek--with-evil-jumps (evil-set-jump))
 
     ;; PATCH Jump to the first candidate
     ;; (when xrefs
@@ -507,7 +532,7 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
     (funcall xref-show-xrefs-function xrefs
              `((window . ,(selected-window)))))))
 
-
+
 ;; dumb-jump
 
 (defun my-advice/dumb-jump-go (orig-fun &rest args)

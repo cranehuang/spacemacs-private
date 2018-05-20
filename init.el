@@ -34,7 +34,8 @@ values."
      ivy
      better-defaults
      github
-     ranger
+     (ranger :variables
+             ranger-show-preview t)
      (colors :variables colors-enable-nyan-cat-progress-bar t)
      prodigy
      search-engine
@@ -85,17 +86,24 @@ values."
      html
      javascript
      (typescript :variables
-                typescript-fmt-on-save nil
-                typescript-fmt-tool 'typescript-formatter)
+                 typescript-fmt-on-save nil
+                 typescript-fmt-tool 'typescript-formatter)
      emacs-lisp
      (clojure :variables clojure-enable-fancify-symbols t)
      racket
+     lsp
      (c-c++ :variables
+            c-c++-enable-c++11 t
+            c-c++-enable-google-style t
+            c-c++-enable-google-newline t
             c-c++-enable-clang-support t
             c-c++-enable-rtags-support t
             c-c++-enable-cmake-ide-support t
             c-c++-enable-clang-format-on-save t
             c-c++-default-mode-for-headers 'c++-mode)
+     (go :variables go-tab-width 4
+         godoc-at-point-function 'godoc-gogetdoc
+         go-use-gometalinter t)
      zilongshanren
      (chinese :packages youdao-dictionary fcitx
               :variables chinese-enable-fcitx nil
@@ -125,7 +133,7 @@ values."
                     helm-themes helm-swoop helm-spacemacs-help smeargle
                     ido-vertical-mode flx-ido company-quickhelp counsel-projectile
                     window-purpose ivy-purpose helm-purpose spacemacs-purpose-popwin
-                    )
+                    google-c-style)
    dotspacemacs-install-packages 'used-only
    dotspacemacs-delete-orphan-packages t))
 
@@ -343,10 +351,6 @@ values."
    ))
 
 (defun dotspacemacs/user-init ()
-  ;; (setq configuration-layer--elpa-archives
-  ;;       '(("melpa-cn" . "https://elpa.zilongshanren.com/melpa/")
-  ;;         ("org-cn"   . "https://elpa.zilongshanren.com/org/")
-  ;;         ("gnu-cn"   . "https://elpa.zilongshanren.com/gnu/")))
   (setq configuration-layer-elpa-archives
         '(("melpa-cn" . "http://elpa.emacs-china.org/melpa/")
           ("org-cn"   . "http://elpa.emacs-china.org/org/")
@@ -399,6 +403,8 @@ values."
   (add-hook 'c++-mode-hook 'ycmd-mode)
   (add-hook 'c-mode-hook 'ycmd-mode)
   (add-hook 'ycmd-mode-hook 'flycheck-mode)
+  (remove-hook 'c-mode-common-hook 'spacemacs//c-toggle-auto-newline)
+
   ;; temp fix for ivy-switch-buffer
   ;; (spacemacs/set-leader-keys "bb" 'helm-mini)
 
@@ -491,4 +497,4 @@ values."
 This is an auto-generated function, do not modify its content directly, use
 Emacs customize menu instead.
 This function is called at the very end of Spacemacs initialization."
-)
+  )

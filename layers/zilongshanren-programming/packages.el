@@ -48,11 +48,7 @@
         ;; editorconfig
         robe
         kotlin-mode
-        ;; (counsel-gtags :location local)
-        ;; counsel-gtags
         eopengrok
-        ;; rtags
-        ;; company-rtags
 
         company-lsp
         haskell-mode
@@ -60,8 +56,8 @@
         lsp-mode
         lsp-haskell
         lsp-rust
-        (lsp-ui :location local)
-        (cquery :location local)
+        lsp-ui
+        cquery
         ))
 
 (defun zilongshanren-programming/post-init-robe ()
@@ -567,18 +563,6 @@
       (spacemacs/set-leader-keys-for-major-mode 'js2-mode
         "gd" 'etags-select-find-tag-at-point))))
 
-;; (defun zilongshanren-programming/init-counsel-gtags ()
-;;   (use-package counsel-gtags
-;;     :defer t
-;;     :init
-;;     (progn
-;;       (setq counsel-gtags-auto-update t
-;;             counsel-gtags-ignore-case t)
-;;       (add-hook 'c-mode-hook 'counsel-gtags-mode)
-;;       (add-hook 'c++-mode-hook 'counsel-gtags-mode)
-;;       (spacemacs/counsel-gtags-define-keys-for-mode 'c++-mode)
-;;       (spacemacs/counsel-gtags-define-keys-for-mode 'c-mode))))
-
 (defun zilongshanren-programming/init-gulpjs ()
   (use-package gulpjs
     :init
@@ -784,34 +768,7 @@ Bring the point 2 lines below the current point."
 
       (crane/turn-on-auto-headers))))
 
-;; (defun zilongshanren-programming/init-company-rtags ()
-;;   (use-package company-rtags
-;;     :defer t))
-
-;; (defun zilongshanren-programming/init-rtags ()
-;;   "Initialize my package"
-;;   (use-package rtags
-;;     :init
-;;     ;;(evil-set-initial-state 'rtags-mode 'emacs)
-;;     ;;(rtags-enable-standard-keybindings c-mode-base-map)
-;;     :ensure company
-;;     :config
-;;     (progn
-;;       (require 'company-rtags)
-;;       (add-to-list 'company-backends 'company-rtags)
-;;       (setq company-rtags-begin-after-member-access t)
-;;       (setq rtags-completions-enabled t)
-;;       ;;(rtags-diagnostics)
-;;       (define-key evil-normal-state-map (kbd "RET") 'rtags-select-other-window)
-;;       (define-key evil-normal-state-map (kbd "M-RET") 'rtags-select)
-;;       ;; (define-key evil-normal-state-map (kbd "q") 'rtags-bury-or-delete)
-;;       (crane/rtags-evil-standard-keybindings 'c-mode)
-;;       (crane/rtags-evil-standard-keybindings 'c++-mode)
-;;       )
-;;     )
-;;   )
-
-(defun zilongshanren-programming/init-company-lsp ()
+(defun zilongshanren-programming/post-init-company-lsp ()
   (use-package company-lsp
     :config
     (spacemacs|add-company-backends :backends company-lsp :modes c-mode-common)))
@@ -832,7 +789,7 @@ Bring the point 2 lines below the current point."
   ;; (spacemacs/set-leader-keys-for-major-mode 'haskell-mode "k" helm-kythe-map)
   )
 
-(defun zilongshanren-programming/init-helm-xref ()
+(defun zilongshanren-programming/post-init-helm-xref ()
   (use-package helm-xref
     :config
     ;; This is required to make xref-find-references work in helm-mode.
@@ -843,77 +800,6 @@ Bring the point 2 lines below the current point."
     (setq xref-show-xrefs-function 'helm-xref-show-xrefs)
     )
   )
-
-(defun zilongshanren-programming/init-lsp-mode ()
-  (use-package lsp-mode
-    :config
-    (add-to-list 'spacemacs-jump-handlers-d-mode 'company-dcd-goto-definition)
-
-;;; Override
-
-    (dolist (mode '("c" "c++" "go" "haskell" "javascript" "python" "rust"))
-      (let ((handler (intern (format "spacemacs-jump-handlers-%s-mode" mode))))
-        (add-to-list handler 'xref-find-definitions))
-      (let ((handler (intern (format "spacemacs-reference-handlers-%s-mode" mode))))
-        (add-to-list handler 'xref-find-references)))
-
-    (with-eval-after-load 'helm-imenu
-;;; Override
-      ;; Revert removing *Rescan*
-      (defun helm-imenu-candidates (&optional buffer)
-        (with-current-buffer (or buffer helm-current-buffer)
-          (let ((tick (buffer-modified-tick)))
-            (if (eq helm-cached-imenu-tick tick)
-                helm-cached-imenu-candidates
-              (setq imenu--index-alist nil)
-              (prog1 (setq helm-cached-imenu-candidates
-                           (let ((index (imenu--make-index-alist t)))
-                             (helm-imenu--candidates-1 index)))
-                (setq helm-cached-imenu-tick tick))))))
-
-;;; Override
-      ;; No (user-error "No word list given") if pattern is empty
-      (defun xref-find-apropos (pattern)
-        "Find all meaningful symbols that match PATTERN.
-The argument has the same meaning as in `apropos'."
-        (interactive (list (read-string
-                            "Search for pattern (word list or regexp): "
-                            nil 'xref--read-pattern-history)))
-        (require 'apropos)
-        (xref--find-xrefs pattern 'apropos pattern nil))
-      )
-    ))
-
-(defun zilongshanren-programming/init-lsp-ui ()
-  (use-package lsp-ui
-    :after lsp-mode
-    :config
-    (setq lsp-line-ignore-duplicate t)
-    (set-face-attribute 'lsp-line-symbol nil :foreground "grey30" :box nil)
-    (set-face-attribute 'lsp-line-current-symbol nil :foreground "grey38" :box nil)
-    (when (internal-lisp-face-p 'lsp-line-contents)
-      (set-face-attribute 'lsp-line-contents nil :foreground "grey35")
-      (set-face-attribute 'lsp-line-current-contents nil :foreground "grey43"))
-
-    (dolist (mode c-c++-modes)
-      (spacemacs/set-leader-keys-for-major-mode mode
-        "la" 'xref-find-apropos
-        "lb" (defun crane-cquery/base ()
-               (interactive)
-               (cquery-xref-find-locations-with-position "$cquery/base"))
-        "lc" (defun crane-cquery/callers ()
-               (interactive)
-               (cquery-xref-find-locations-with-position "$cquery/callers"))
-        "ld" (defun crane-cquery/derived ()
-
-               (cquery-xref-find-locations-with-position "$cquery/derived"))
-        "ll" #'lsp-line-mode
-        "lv" (defun crane-cquery/vars ()
-               (interactive)
-               (cquery-xref-find-locations-with-position "$cquery/vars"))
-        ))
-    ))
-
 
 (defun zilongshanren-programming/init-lsp-haskell ()
   (use-package lsp-haskell
@@ -932,14 +818,170 @@ The argument has the same meaning as in `apropos'."
     )
   )
 
+(defun zilongshanren-programming/init-ivy-xref ()
+  (use-package ivy-xref
+    :config
+    ;; This is required to make xref-find-references work in helm-mode.
+    ;; In helm-mode, it gives a prompt and asks the identifier (which has no text property) and then passes it to lsp-mode, which requires the text property at point to locate the references.
+    ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=29619
+    (setq xref-prompt-for-identifier '(not xref-find-definitions xref-find-definitions-other-window xref-find-definitions-other-frame xref-find-references spacemacs/jump-to-definition spacemacs/jump-to-reference))
 
+    ;; Use ivy-xref to display xref.el results.
+    (setq xref-show-xrefs-function 'ivy-xref-show-xrefs)
+    )
+  )
+
+(defun zilongshanren-programming/post-init-lsp-mode ()
+  (use-package lsp-mode
+    :config
+    (add-to-list 'spacemacs-jump-handlers-d-mode 'company-dcd-goto-definition)
+    (setq-default flycheck-disabled-checkers '(c/c++-clang c/c++-gcc)) ;; in flycheck.el
+
+    (setq company-quickhelp-delay 0)
+    (setq company-show-numbers t)
+
+    (require 'lsp-imenu)
+    (add-hook 'lsp-after-open-hook #'lsp-enable-imenu)
+
+    (advice-add 'spacemacs/jump-to-definition :before #'my-advice/xref-set-jump)
+    (advice-add 'spacemacs/jump-to-reference :before #'my-advice/xref-set-jump)
+
+    ;;; Override
+    (dolist (mode '("c" "c++" "go" "haskell" "javascript" "python" "rust"))
+      (let ((handler (intern (format "spacemacs-jump-handlers-%s-mode" mode))))
+        (add-to-list handler 'lsp-ui-peek-find-definitions))
+      (let ((handler (intern (format "spacemacs-reference-handlers-%s-mode" mode))))
+        (add-to-list handler 'lsp-ui-peek-find-references)))
+
+    (defun text-document/type-definition () (interactive) (lsp-ui-peek-find-custom 'type "textDocument/typeDefinition"))
+    (defun cquery/base () (interactive) (lsp-ui-peek-find-custom 'base "$cquery/base"))
+    (defun cquery/callers () (interactive) (lsp-ui-peek-find-custom 'callers "$cquery/callers"))
+    (defun cquery/derived () (interactive) (lsp-ui-peek-find-custom 'derived "$cquery/derived"))
+    (defun cquery/vars () (interactive) (lsp-ui-peek-find-custom 'vars "$cquery/vars"))
+    (defun cquery/random () (interactive) (lsp-ui-peek-find-custom 'random "$cquery/random"))
+
+    (defun cquery/references-address ()
+      (interactive)
+      (lsp-ui-peek-find-custom
+       'address "textDocument/references"
+       (plist-put (lsp--text-document-position-params) :context
+                  '(:role 128))))
+
+    (defun cquery/references-read ()
+      (interactive)
+      (lsp-ui-peek-find-custom
+       'read "textDocument/references"
+       (plist-put (lsp--text-document-position-params) :context
+                  '(:role 8))))
+
+    (defun cquery/references-write ()
+      (interactive)
+      (lsp-ui-peek-find-custom
+       'write "textDocument/references"
+       (plist-put (lsp--text-document-position-params) :context
+                  '(:role 16))))
+
+    (spacemacs/set-leader-keys-for-minor-mode 'lsp-mode
+      "la" #'lsp-ui-find-workspace-symbol
+      "lA" #'lsp-ui-peek-find-workspace-symbol
+      "lf" #'lsp-format-buffer
+      "ll" #'lsp-ui-sideline-mode
+      "lD" #'lsp-ui-doc-mode
+      "lr" #'lsp-rename
+      "lt" #'text-document/type-definition
+      )
+
+    (defhydra hydra/ref (spacemacs-lsp-mode-map "l")
+      "reference"
+      ("d" lsp-ui-peek-find-definitions "next" :bind nil)
+      ("p" (-let [(i . n) (lsp-ui-find-prev-reference)]
+             (if (> n 0) (message "%d/%d" i n))) "prev")
+      ("n" (-let [(i . n) (lsp-ui-find-next-reference)]
+             (if (> n 0) (message "%d/%d" i n))) "next")
+      ("R" (-let [(i . n) (lsp-ui-find-prev-reference
+                           (lambda (x)
+                             (/= (logand (ht-get x "role" 0) 8) 0)))]
+             (if (> n 0) (message "read %d/%d" i n))) "prev read" :bind nil)
+      ("r" (-let [(i . n) (lsp-ui-find-next-reference
+                           (lambda (x)
+                             (/= (logand (ht-get x "role" 0) 8) 0)))]
+             (if (> n 0) (message "read %d/%d" i n))) "next read" :bind nil)
+      ("W" (-let [(i . n) (lsp-ui-find-prev-reference
+                           (lambda (x)
+                             (/= (logand (ht-get x "role" 0) 16) 0)))]
+             (if (> n 0) (message "write %d/%d" i n))) "prev write" :bind nil)
+      ("w" (-let [(i . n) (lsp-ui-find-next-reference
+                           (lambda (x)
+                             (/= (logand (ht-get x "role" 0) 16) 0)))]
+             (if (> n 0) (message "write %d/%d" i n))) "next write" :bind nil)
+      )
+
+    (defhydra hydra/random (spacemacs-lsp-mode-map "l")
+      "random"
+      ("SPC" cquery/random "random")
+      )
+
+    (dolist (mode c-c++-modes)
+      (spacemacs/set-leader-keys-for-major-mode mode
+        "lb" #'cquery/base
+        "lc" #'cquery/callers
+        "ld" #'cquery/derived
+        "lR" #'cquery-freshen-index
+        "lv" #'cquery/vars
+        "l SPC" #'cquery/random
+        "a" #'cquery/references-address
+        "r" #'cquery/references-read
+        "w" #'cquery/references-write
+        "m" #'cquery-member-hierarchy
+        ;; bases
+        "i" #'cquery-inheritance-hierarchy
+        ;; derived
+        "I" (lambda () (interactive) (cquery-inheritance-hierarchy t))
+        ;; callers
+        "c" #'cquery-call-hierarchy
+        ;; callees
+        "C" (lambda () (interactive) (cquery-call-hierarchy t))
+        ))
+
+    (define-key evil-motion-state-map (kbd "M-<down>") 'lsp-ui-find-next-reference)
+    (define-key evil-motion-state-map (kbd "M-<up>") 'lsp-ui-find-previous-reference)
+    )
+  )
+
+(defun zilongshanren-programming/post-init-lsp-ui ()
+  (use-package lsp-ui
+    :config
+    (setq lsp-ui-doc-include-signature nil)  ; don't include type signature in the child frame
+
+    ;; TODO slow https://github.com/emacs-lsp/lsp-ui/issues/45
+    ;; (lsp-ui-flycheck-enable 1)
+    (setq lsp-ui-flycheck-enable nil)
+    (setq lsp-ui-sideline-enable nil)
+    (setq lsp-ui-sideline-show-symbol nil)  ; don't show symbol on the right of info
+    (setq lsp-ui-sideline-ignore-duplicate t)
+    (set-face-attribute 'lsp-ui-sideline-symbol nil :foreground "grey30" :box nil)
+    (set-face-attribute 'lsp-ui-sideline-current-symbol nil :foreground "grey38" :box nil)
+
+    (setq lsp-ui-peek-expand-function (lambda (xs) (mapcar #'car xs)))
+    (define-key lsp-ui-peek-mode-map (kbd "h") 'lsp-ui-peek--select-prev-file)
+    (define-key lsp-ui-peek-mode-map (kbd "l") 'lsp-ui-peek--select-next-file)
+    (define-key lsp-ui-peek-mode-map (kbd "j") 'lsp-ui-peek--select-next)
+    (define-key lsp-ui-peek-mode-map (kbd "k") 'lsp-ui-peek--select-prev)
+    ))
+
+
+;; See also https://github.com/cquery-project/cquery/wiki/Emacs
 (defun zilongshanren-programming/init-cquery ()
   (use-package cquery
     :init
+    (add-hook 'c-mode-common-hook #'cquery//enable)
     :config
+    ;; overlay is slow
+    ;; Use https://github.com/emacs-mirror/emacs/commits/feature/noverlay
     (progn
       (setq cquery-executable "/Users/cranehuang/Githubs/cquery/build/release/bin/cquery")
       (setq cquery-resource-dir "/Users/cranehuang/Githubs/cquery/clang_resource_dir/")
-      (setq cquery-cache-dir ".spacemacs/cquery_cached_index/")
-      (require 'lsp-imenu)
-      (add-hook 'c-mode-common-hook #'crane//enable-cquery-if-compile-commands-json))))
+      (setq cquery-sem-highlight-method 'overlay)
+      (cquery-use-default-rainbow-sem-highlight)
+      )
+    ))
