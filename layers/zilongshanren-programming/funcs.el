@@ -500,6 +500,9 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
 
 ;;; xref
 
+(defun my-advice/xref-set-jump (&optional args)
+  (lsp-ui-peek--with-evil-jumps (evil-set-jump)))
+
 (defun my-xref/find-definitions ()
   (interactive)
   (if lsp-mode (lsp-ui-peek-find-definitions) (spacemacs/jump-to-definition)))

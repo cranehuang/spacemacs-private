@@ -938,9 +938,9 @@ Bring the point 2 lines below the current point."
         ;; derived
         "I" (lambda () (interactive) (cquery-inheritance-hierarchy t))
         ;; callers
-        "c" #'cquery-call-hierarchy
+        "lh" #'cquery-call-hierarchy
         ;; callees
-        "C" (lambda () (interactive) (cquery-call-hierarchy t))
+        "lH" (lambda () (interactive) (cquery-call-hierarchy t))
         ))
 
     (define-key evil-motion-state-map (kbd "M-<down>") 'lsp-ui-find-next-reference)
