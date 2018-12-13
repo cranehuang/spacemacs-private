@@ -378,51 +378,6 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
     )
   )
 
-(defun cquery//enable ()
-  (when
-      (and buffer-file-name
-           (or (locate-dominating-file default-directory "compile_commands.json")
-               (locate-dominating-file default-directory ".cquery")))
-    (lsp-cquery-enable)))
-
-
-;; xref-find-apropos (workspace/symbol)
-
-(defun my/highlight-pattern-in-text (pattern line)
-  (when (> (length pattern) 0)
-    (let ((i 0))
-      (while (string-match pattern line i) ;
-        (setq i (match-end 0))
-        (add-face-text-property (match-beginning 0) (match-end 0) 'highlight t line)
-        )
-      line)))
-
-(with-eval-after-load 'lsp-methods
-  ;;; Override
-  ;; Use containerName instead of name if available
-  (defun lsp--symbol-information-to-xref (symbol)
-    "Return a `xref-item' from SYMBOL information."
-    (let* ((location (gethash "location" symbol))
-           (uri (gethash "uri" location))
-           (range (gethash "range" location))
-           (start (gethash "start" range))
-           (name (gethash "name" symbol))
-           (container-name (gethash "containerName" symbol)))
-      (xref-make (format "[%s] %s"
-                         (alist-get (gethash "kind" symbol) lsp--symbol-kind)
-                         (if container-name
-                             (my/highlight-pattern-in-text (regexp-quote name) container-name)
-                           name))
-                 (xref-make-file-location (string-remove-prefix "file://" uri)
-                                          (1+ (gethash "line" start))
-                                          (gethash "character" start))))))
-(defun my/ffap ()
-  (interactive)
-  (let ((filename (ffap-guess-file-name-at-point)))
-    (when (not filename)
-      (user-error "No file at point"))
-    (ffap filename)))
-
 
 ;;; realgud
 
@@ -496,51 +451,3 @@ sets `spacemacs-reference-handlers' in buffers of that mode."
     (if (advice-function-member-p #'my/realtime-elisp-doc-function eldoc-documentation-function)
         (remove-function (local 'eldoc-documentation-function) #'my/realtime-elisp-doc-function)
       (add-function :after-while (local 'eldoc-documentation-function) #'my/realtime-elisp-doc-function))))
-
-
-;;; xref
-
-(defun my-advice/xref-set-jump (&optional args)
-  (lsp-ui-peek--with-evil-jumps (evil-set-jump)))
-
-(defun my-xref/find-definitions ()
-  (interactive)
-  (if lsp-mode (lsp-ui-peek-find-definitions) (spacemacs/jump-to-definition)))
-
-(defun my-xref/find-references ()
-  (interactive)
-  (if lsp-mode (lsp-ui-peek-find-references) (spacemacs/jump-to-definition)))
-
-;;; Override
-;; This function is transitively called by xref-find-{definitions,references,apropos}
-(require 'xref)
-(defun xref--show-xrefs (xrefs display-action &optional always-show-list)
-  (cond
-   ((cl-some (lambda (x) (string-match-p x buffer-file-name))
-             my-xref-blacklist)
-    nil)
-   ((and (not (cdr xrefs)) (not always-show-list))
-    ;; PATCH
-    (lsp-ui-peek--with-evil-jumps (evil-set-jump))
-
-    (xref--pop-to-location (car xrefs) display-action))
-   (t
-    ;; PATCH
-    (lsp-ui-peek--with-evil-jumps (evil-set-jump))
-
-    ;; PATCH Jump to the first candidate
-    ;; (when xrefs
-    ;; (xref--pop-to-location (car xrefs) display-action))
-
-    (funcall xref-show-xrefs-function xrefs
-             `((window . ,(selected-window)))))))
-
-
-;; dumb-jump
-
-(defun my-advice/dumb-jump-go (orig-fun &rest args)
-  (unless (or lsp-mode
-              (cl-some
-               (lambda (x) (string-match-p x buffer-file-name))
-               my-xref-blacklist))
-    (apply orig-fun args)))

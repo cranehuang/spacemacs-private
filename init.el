@@ -35,7 +35,9 @@ values."
      better-defaults
      github
      (ranger :variables
-             ranger-show-preview t)
+             ranger-show-preview t
+             ranger-max-preview-size 1
+             ranger-ignored-extensions '("mkv" "iso" "mp4"))
      (colors :variables colors-enable-nyan-cat-progress-bar t)
      prodigy
      search-engine
@@ -66,7 +68,7 @@ values."
      docker
      ;; latex
      deft
-     (markdown :variables markdown-live-preview-engine 'vmd)
+     (markdown :variables markdown-live-preview-engine 'eww)
      org
      ;; shaders
      yaml
@@ -76,7 +78,7 @@ values."
      ;; vagrant
      ipython-notebook
      ycmd
-     semantic
+     ;; semantic
      (dash :variables
            ;; helm-dash-docset-newpath "/Users/cranehuang/Library/Application Support/Dash/DocSets"
            helm-dash-browser-func 'eww)
@@ -92,18 +94,20 @@ values."
      (clojure :variables clojure-enable-fancify-symbols t)
      racket
      lsp
+     ;; (cmake :variables cmake-enable-cmake-ide-support t)
      (c-c++ :variables
-            c-c++-enable-c++11 t
-            c-c++-enable-google-style t
-            c-c++-enable-google-newline t
-            c-c++-enable-clang-support t
-            c-c++-enable-rtags-support t
-            c-c++-enable-cmake-ide-support t
-            c-c++-enable-clang-format-on-save t
+            c-c++-adopt-subprojects t
+            c-c++-backend 'lsp-ccls
+            c-c++-lsp-executable (file-truename "~/Githubs/ccls/Release/ccls")
+            c-c++-lsp-sem-highlight-rainbow t
             c-c++-default-mode-for-headers 'c++-mode)
-     (go :variables go-tab-width 4
-         godoc-at-point-function 'godoc-gogetdoc
-         go-use-gometalinter t)
+     ;; (cmake :variables cmake-enable-cmake-ide-support t)
+     (go :variables
+         go-tab-width 4
+         ;; gofmt-command "goimports"
+         go-backend 'lsp
+         go-use-golangci-lint t
+         godoc-at-point-function 'godoc-gogetdoc)
      zilongshanren
      (chinese :packages youdao-dictionary fcitx
               :variables chinese-enable-fcitx nil
@@ -126,7 +130,7 @@ values."
                     livid-mode git-gutter git-gutter-fringe  evil-escape
                     leuven-theme gh-md evil-lisp-state spray lorem-ipsum
                     ac-ispell ace-jump-mode auto-complete auto-dictionary
-                    clang-format define-word google-translate disaster epic
+                    clang-format define-word google-translate epic
                     fancy-battery org-present orgit orglue spacemacs-theme
                     helm-flyspell flyspell-correct-helm clean-aindent-mode
                     helm-c-yasnippet ace-jump-helm-line helm-make
@@ -199,7 +203,7 @@ values."
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 14
+                               :size 15
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -318,7 +322,7 @@ values."
    ;; scrolling overrides the default behavior of Emacs which recenters point
    ;; when it reaches the top or bottom of the screen. (default t)
    dotspacemacs-smooth-scrolling nil
-   dotspacemacs-line-numbers 'relative
+   ;; dotspacemacs-line-numbers 'relative
    dotspacemacs-folding-method 'origami
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
@@ -392,7 +396,6 @@ values."
 
   ;; force horizontal split window
   (setq split-width-threshold 120)
-  ;; (linum-relative-on)
 
   (spacemacs|add-company-backends :modes text-mode)
 
