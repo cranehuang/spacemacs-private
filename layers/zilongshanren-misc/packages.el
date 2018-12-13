@@ -42,7 +42,12 @@
         ranger
         golden-ratio
         (highlight-global :location (recipe :fetcher github :repo "glen-dai/highlight-global"))
+        (unicad :location local)
         ))
+
+(defun zilongshanren-misc/init-unicad ()
+  (use-package unicad
+    :init (require 'unicad)))
 
 (defun zilongshanren-misc/init-highlight-global ()
   (use-package highlight-global
